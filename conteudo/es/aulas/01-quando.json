@@ -1,0 +1,303 @@
+{
+  "slug": "quando",
+  "num": 1,
+  "menu": "Cuándo no",
+  "titulo": "Cuándo NO usar multiagente",
+  "titulo_curto": "Cuándo no usar",
+  "minutos": 15,
+  "lead": "Cada agente adicional vuelve a leer el contexto, gasta su propia cuota y necesita ser coordinado. En la mayoría de las tareas de código, un solo agente, o subagentes que devuelven poco, rinde más. En esta clase decides antes de abrir el segundo agente, con una matriz de señales que corre como script.",
+  "objetivo": "decidir entre un agente, secuencia, paralelo o híbrido según la matriz de señales, antes de abrir el segundo agente.",
+  "competencias": [
+    "decidir-quando-paralelizar",
+    "estimar-custo-de-coordenacao",
+    "reconhecer-tarefa-simples"
+  ],
+  "aprende": [
+    {
+      "icone": "grafico",
+      "t": "Cuánto cuesta un equipo: los números publicados y qué miden"
+    },
+    {
+      "icone": "lista",
+      "t": "Las 6 señales de secuencia y las 7 de paralelo"
+    },
+    {
+      "icone": "portao",
+      "t": "La regla de la diferencia de 2 puntos y el híbrido"
+    },
+    {
+      "icone": "terminal",
+      "t": "La matriz como script, con tus tareas"
+    }
+  ],
+  "hero_alt": "Un destornillador solo sobre una mesa oscura, junto a una caja de herramientas cerrada.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Antes del segundo agente",
+      "sub": "Haz clic en cada etapa. La matriz es del kit arquiteto-de-execucao (agenteexecuta).",
+      "nos": [
+        {
+          "icone": "chat",
+          "titulo": "Pedido",
+          "sub": "lo que tiene que salir",
+          "detalhe": "Empieza por el resultado y por el tamaño. Si cabe en una conversación y el criterio de terminado es un solo comando, no hay equipo que armar."
+        },
+        {
+          "icone": "check",
+          "titulo": "¿Es simple?",
+          "sub": "pequeña → directo",
+          "detalhe": "Una tarea simple y pequeña no pasa por la matriz: un solo agente la hace. Abrir un subagente para resumir un texto es el error que Anthropic describe en su propio sistema de investigación: agentes creando 50 subagentes para preguntas simples."
+        },
+        {
+          "icone": "camadas",
+          "titulo": "Señales S",
+          "sub": "6 de secuencia",
+          "itens": [
+            {
+              "icone": "seta",
+              "t": "depende de la salida anterior"
+            },
+            {
+              "icone": "memoria",
+              "t": "contexto compartido grande"
+            },
+            {
+              "icone": "x",
+              "t": "un error inicial contamina el resto"
+            }
+          ],
+          "detalhe": "Un punto por cada una: depende de la salida anterior; contexto compartido grande; las decisiones tienen que ser consistentes; un error inicial contamina varias tareas; juntar versiones divergentes sale caro; una etapa enseña a la siguiente."
+        },
+        {
+          "icone": "fila",
+          "titulo": "Señales P",
+          "sub": "7 de paralelo",
+          "itens": [
+            {
+              "icone": "check",
+              "t": "tareas independientes"
+            },
+            {
+              "icone": "cadeado",
+              "t": "entradas congeladas"
+            },
+            {
+              "icone": "chip",
+              "t": "trabajo mecánico"
+            }
+          ],
+          "detalhe": "Un punto por cada una: tareas independientes; entradas congeladas; cada salida se valida por sí sola; trabajo mecánico o determinístico; contexto pequeño por tarea; urgencia alta; hay máquina de sobra."
+        },
+        {
+          "icone": "portao",
+          "titulo": "Decisión",
+          "sub": "diferencia ≥ 2 gana",
+          "forte": true,
+          "detalhe": "Diferencia de 2 puntos o más: gana el lado mayor. Menos de 2 o empate: híbrido (lo que depende queda en secuencia, el resto en paralelo). Costo de error alto, sea cual sea la puntuación: la planificación y la revisión quedan en el centro, aunque la ejecución sea en paralelo."
+        }
+      ],
+      "legenda": "La matriz es un punto de partida, no una medición. Evita el reflejo de abrir agentes solo porque se puede."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "El costo que no aparece en el pedido",
+      "sub": "Lo que está publicado, con fecha, y qué mide cada número.",
+      "passos": [
+        {
+          "titulo": "Tokens",
+          "sub": "Anthropic, jun/2025",
+          "texto": [
+            "En el post sobre el sistema de investigación de Anthropic (13/06/2025): los agentes gastan cerca de 4× los tokens de un chat, y los sistemas multiagente cerca de 15×. Los datos son de ellos, en un producto de investigación.",
+            "La doc de agent teams de Claude Code dice lo mismo sin número: un equipo usa significativamente más tokens que una sesión, y el gasto crece con cada compañero activo."
+          ]
+        },
+        {
+          "titulo": "Ganancia",
+          "sub": "dónde aparece",
+          "texto": [
+            "En el mismo post, un líder Opus 4 con subagentes Sonnet 4 superó a Opus 4 solo en un 90,2% en su evaluación interna de investigación, en preguntas de amplitud (muchas direcciones independientes).",
+            "El propio post avisa: la mayoría de las tareas de código tienen menos partes paralelizables que la investigación, y los agentes todavía coordinan mal en tiempo real. No hay ninguna medición de este curso que transfiera esa ganancia a tu código."
+          ]
+        },
+        {
+          "titulo": "Contexto",
+          "sub": "la preparación repetida",
+          "texto": [
+            "La matriz del arquiteto-de-execucao muestra la cuenta (ejemplo ilustrativo, no medido): tres agentes que leen 50 mil de contexto y trabajan 20 mil cada uno suman 210 mil; un agente que reaprovecha el contexto hace lo mismo con 110 mil.",
+            "El ahorro viene de no repetir la preparación. El paralelo vale la pena cuando cada tarea tiene contexto pequeño."
+          ]
+        },
+        {
+          "titulo": "Límites",
+          "sub": "reglas del kit",
+          "texto": [
+            "Ningún subagente sin tarea, entrada y salida explícitas; como máximo un nivel de delegación, salvo necesidad clara; dos intentos por ítem antes de replantear; no reprocesar un ítem aprobado.",
+            "El trabajo mecánico (convertir, renderizar, correr tests) va a un script, no a un agente."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "La matriz como script",
+      "sub": "Escribe las señales de cada tarea en un archivo; el script suma y decide. Nada de modelo: corre gratis.",
+      "blocos": [
+        {
+          "rot": "Terminal · proyecto de entrenamiento del curso (una vez)",
+          "icone": "terminal",
+          "conteudo": "git clone https://github.com/inematds/inema-agent-runtime.git ~/treino-multi\ncd ~/treino-multi && git log -1 --format='%h %cs'   # testado em 5cb431b 2026-10-05"
+        },
+        {
+          "rot": "decide.py · guárdalo en ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "# decide.py — matriz de decisión del arquiteto-de-execucao (inematds/agenteexecuta), en código\n# Uso: python3 decide.py tarefas.txt\n# tarefas.txt: un bloque por tarea; \"# nome\" abre el bloque; después, un código por línea:\n#   S1..S6 = señales de secuencia, P1..P7 = señales de paralelo,\n#   simples = tarea pequeña (no aplica la matriz), erro-caro = costo de error alto\nimport sys\n\nSEQ = {\"S1\": \"depende da saída anterior\", \"S2\": \"contexto compartilhado grande\",\n       \"S3\": \"decisões precisam ficar consistentes\", \"S4\": \"erro inicial contamina várias tarefas\",\n       \"S5\": \"juntar versões divergentes sai caro\", \"S6\": \"uma etapa ensina a seguinte\"}\nPAR = {\"P1\": \"tarefas independentes\", \"P2\": \"entradas congeladas\",\n       \"P3\": \"cada saída se valida sozinha\", \"P4\": \"trabalho mecânico ou determinístico\",\n       \"P5\": \"contexto pequeno por tarefa\", \"P6\": \"urgência alta\", \"P7\": \"há máquina sobrando\"}\n\ndef decide(nome, cods):\n    print(f\"# {nome}\")\n    for c in cods:\n        if c not in SEQ and c not in PAR and c not in (\"simples\", \"erro-caro\"):\n            print(f\"aviso: código desconhecido '{c}' (ignorado)\")\n    if \"simples\" in cods:\n        print(\"decisão: direto (um agente só, sem matriz)\\n\")\n        return\n    s = sum(c in SEQ for c in cods)\n    p = sum(c in PAR for c in cods)\n    if abs(s - p) >= 2:\n        d = \"sequencial\" if s > p else \"paralelo\"\n    else:\n        d = \"híbrido\"\n    print(f\"sequência: {s} · paralelo: {p} · diferença: {abs(s - p)}\")\n    print(f\"decisão: {d}\")\n    if \"erro-caro\" in cods:\n        print(\"custo de erro alto: planejamento e revisão centralizados\")\n    print()\n\nnome, cods = None, []\nfor linha in open(sys.argv[1], encoding=\"utf-8\"):\n    linha = linha.strip()\n    if linha.startswith(\"#\"):\n        if nome:\n            decide(nome, cods)\n        nome, cods = linha.lstrip(\"# \").strip(), []\n    elif linha:\n        cods.append(linha.split()[0])\nif nome:\n    decide(nome, cods)"
+        },
+        {
+          "rot": "tarefas.txt · cuatro tareas de ejemplo",
+          "icone": "lista",
+          "conteudo": "# refactorizar el módulo de login\nS1  cada paso usa el anterior\nS2  el módulo entero tiene que estar en la cabeza\nS3  nombres y contratos iguales en todas partes\nS4  un error en el contrato rompe el resto\nerro-caro\n\n# convertir 500 archivos .md a .html\nP1  un archivo no depende del otro\nP2  el conversor y el modelo están cerrados\nP3  cada .html se verifica solo\nP4  es mecánico\nP5  cada archivo es pequeño\n\n# investigación de mercado en 4 segmentos\nS3  las preguntas tienen que ser las mismas\nS6  el primer segmento ajusta las preguntas\nP1  segmentos independientes\nP5  poco contexto por segmento\n\n# resumir un texto en 5 líneas\nsimples"
+        },
+        {
+          "rot": "Terminal · ejecutar",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\npython3 decide.py tarefas.txt; echo \"saída: $?\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Salida capturada (19/10/2026)",
+            "html": "<pre># refatorar o módulo de login\nsequência: 4 · paralelo: 0 · diferença: 4\ndecisão: sequencial\ncusto de erro alto: planejamento e revisão centralizados\n\n# converter 500 arquivos .md para .html\nsequência: 0 · paralelo: 5 · diferença: 5\ndecisão: paralelo\n\n# pesquisa de mercado em 4 segmentos\nsequência: 2 · paralelo: 2 · diferença: 0\ndecisão: híbrido\n\n# resumir um texto em 5 linhas\ndecisão: direto (um agente só, sem matriz)\n\nsaída: 0</pre><p>La conversión de 500 archivos es paralelo mecánico: un script con varios trabajadores y una revisión por muestreo en el centro (es la clase 3). La investigación de mercado quedó empatada: el primer segmento corre solo, los otros tres en paralelo.</p>"
+          },
+          {
+            "rot": "Error común: código mal escrito",
+            "html": "<p>Un código en minúscula no cuenta. El script avisa en lugar de sumar en silencio, y la decisión cambia. Capturado el mismo día:</p><pre># migrar o banco\naviso: código desconhecido 's1' (ignorado)\nsequência: 1 · paralelo: 1 · diferença: 0\ndecisão: híbrido</pre><p>Con <code>S1</code> correcto, sería secuencia 2 × paralelo 1, todavía híbrido, pero por un motivo que tú elegiste. Verifica con <code>grep -c \"^aviso:\" decisao.md</code> → <code>0</code>.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Práctica",
+      "sub": "Primero el ejemplo, después tres tareas tuyas.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E1 · La matriz en el ejemplo",
+          "min": "10 min",
+          "texto": "Clona el proyecto de práctica, guarda decide.py y tarefas.txt y ejecútalo.",
+          "pronto": "<code>python3 decide.py tarefas.txt | grep -c \"^decisão:\"</code> → <code>4</code>, y la investigación de mercado da <code>decisão: híbrido</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E2 · Tres tareas tuyas",
+          "min": "20 min",
+          "texto": "Escribe minhas-tarefas.txt con tres tareas reales de tu semana (una que hayas pensado dividir entre agentes). Marca solo las señales que hoy son verdaderas.",
+          "pronto": "<code>python3 decide.py minhas-tarefas.txt &gt; decisao.md</code>; <code>grep -c \"^decisão:\" decisao.md</code> → <code>3</code> y <code>grep -c \"^aviso:\" decisao.md</code> → <code>0</code>."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Prueba de la clase",
+      "perguntas": [
+        {
+          "p": "Según el post de Anthropic (jun/2025), ¿cuánto gasta en tokens un sistema multiagente comparado con un chat?",
+          "opcoes": [
+            "Lo mismo",
+            "Cerca de 4×",
+            "Cerca de 15×",
+            "La mitad, por dividir el trabajo"
+          ],
+          "certa": 2,
+          "explica": "Cerca de 15× (y agentes aislados, cerca de 4×), según los datos de su sistema de investigación. Dividir el trabajo no divide el contexto: cada agente lee el suyo.",
+          "ref": "passos",
+          "cert": true
+        },
+        {
+          "p": "Secuencia 3, paralelo 2. ¿Qué indica la matriz?",
+          "opcoes": [
+            "Secuencial",
+            "Paralelo",
+            "Híbrido",
+            "Un solo agente"
+          ],
+          "certa": 2,
+          "explica": "La diferencia es 1, menor que 2: híbrido. El error común es elegir el lado mayor por cualquier diferencia.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "Una migración con costo de error alto puntuó paralelo. ¿Qué cambia?",
+          "opcoes": [
+            "Nada, corre en paralelo",
+            "La planificación y la revisión quedan en el centro, aun con ejecución paralela",
+            "Pasa a ser secuencial",
+            "Solo usa el modelo más fuerte"
+          ],
+          "certa": 1,
+          "explica": "Un error costoso centraliza el plan y la revisión, sea cual sea la puntuación. La ejecución de los ítems independientes todavía puede ser paralela.",
+          "ref": "diagrama"
+        },
+        {
+          "p": "¿Por qué la ganancia de 90,2% del sistema de investigación no vale directamente para tu código?",
+          "opcoes": [
+            "Porque el número es falso",
+            "Porque se midió en investigación de amplitud, y el código suele tener menos partes paralelizables",
+            "Porque usaron API",
+            "Porque Claude Code no tiene subagentes"
+          ],
+          "certa": 1,
+          "explica": "El propio post hace la salvedad: la ganancia aparece en preguntas con muchas direcciones independientes. En código, las dependencias pesan más.",
+          "ref": "passos"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "En tres frases",
+      "itens": [
+        {
+          "t": "El equipo cuesta",
+          "texto": "Cada agente relee el contexto y gasta su propia cuota; publicado: cerca de 15× los tokens de un chat."
+        },
+        {
+          "t": "Matriz primero",
+          "texto": "Señales de secuencia × paralelo; una diferencia de 2 decide, menos que eso es híbrido; el error caro centraliza."
+        },
+        {
+          "t": "Lo simple va directo",
+          "texto": "La tarea pequeña no pasa por la matriz, y el trabajo mecánico va a un script."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir más allá",
+      "links": [
+        {
+          "t": "Anthropic: How we built our multi-agent research system (13/06/2025)",
+          "href": "https://www.anthropic.com/engineering/multi-agent-research-system",
+          "icone": "lupa"
+        },
+        {
+          "t": "Claude Code: comparar subagentes, agent view, agent teams y workflows",
+          "href": "https://code.claude.com/docs/en/agents",
+          "icone": "camadas"
+        },
+        {
+          "t": "Skill arquiteto-de-execucao (matriz y límites operativos)",
+          "href": "https://github.com/inematds/agenteexecuta",
+          "icone": "arquivo"
+        },
+        {
+          "t": "Curso 0 de la formación: el loop en cinco piezas",
+          "href": "https://inematds.github.io/loop-r-eng-base-v72/",
+          "icone": "seta"
+        }
+      ]
+    }
+  ]
+}

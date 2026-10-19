@@ -1,0 +1,303 @@
+{
+  "slug": "isolamento",
+  "num": 5,
+  "menu": "Aislamiento",
+  "titulo": "Aislamiento: worktrees y sandboxes",
+  "titulo_curto": "Worktrees y sandboxes",
+  "minutos": 20,
+  "lead": "Dos agentes en el mismo checkout no dan error: uno borra el trabajo del otro en silencio. Worktree le da a cada uno su propia copia y convierte la pérdida silenciosa en un conflicto visible a la hora del merge. Sandbox hace lo mismo con los permisos: el revisor lee, pero no escribe. En esta clase compruebas las dos cosas sin gastar cuota.",
+  "objetivo": "darle a cada agente que escribe un worktree propio y a cada revisor un sandbox de solo lectura, y comprobar la diferencia.",
+  "competencias": [
+    "isolar-agentes-com-worktree",
+    "escolher-sandbox-por-papel",
+    "juntar-trabalho-paralelo-com-merge"
+  ],
+  "aprende": [
+    {
+      "icone": "x",
+      "t": "La escritura perdida: dos agentes, un archivo, ningún error"
+    },
+    {
+      "icone": "git",
+      "t": "Worktree a mano, en claude --worktree, en subagente y en Codex"
+    },
+    {
+      "icone": "cadeado",
+      "t": "Sandbox read-only y workspace-write de Codex, probados"
+    },
+    {
+      "icone": "portao",
+      "t": "El conflicto en el merge como buena señal"
+    }
+  ],
+  "hero_alt": "Tres cajas de acrílico separadas sobre una mesa oscura, cada una con su placa y su pila de fichas.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Tres formas de poner a dos agentes en el mismo repositorio",
+      "sub": "Haz clic en cada una. El ensayo de más abajo prueba las dos primeras.",
+      "nos": [
+        {
+          "icone": "x",
+          "titulo": "Mismo checkout",
+          "sub": "pierde en silencio",
+          "detalhe": "Cada agente lee el archivo, piensa y escribe el archivo completo (es lo que hace la herramienta Write). Quien escribe al final gana; el cambio del otro desaparece, sin error y sin aviso. En el ensayo, la versión 2 desapareció."
+        },
+        {
+          "icone": "git",
+          "titulo": "Worktree por agente",
+          "sub": "copia + branch propios",
+          "forte": true,
+          "itens": [
+            {
+              "icone": "pasta",
+              "t": "git worktree add"
+            },
+            {
+              "icone": "terminal",
+              "t": "claude --worktree"
+            },
+            {
+              "icone": "robo",
+              "t": "isolation: worktree"
+            }
+          ],
+          "detalhe": "Cada worktree es otra carpeta, con su propia branch, sobre el mismo historial. Los agentes no se ven entre sí. Al final, merge: los cambios en líneas distintas entran juntos; en la misma línea, git se detiene y muestra el conflicto."
+        },
+        {
+          "icone": "cadeado",
+          "titulo": "Sandbox por rol",
+          "sub": "read-only / workspace-write",
+          "detalhe": "Aislamiento de permisos. En Codex, read-only no escribe ni en la carpeta; workspace-write escribe solo en la carpeta de trabajo. Es la forma de que el revisor ejecute comandos sin poder escribir. Sandbox como defensa de seguridad (red, inyección) es el curso 4."
+        }
+      ],
+      "legenda": "Worktree aísla archivos, no procesos: dos worktrees todavía comparten puertos, base de datos local y cuota."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Ensayo: la escritura perdida y el worktree",
+      "sub": "Repositorio desechable y dos agentes falsos que leen, esperan 2 s y escriben el archivo completo.",
+      "blocos": [
+        {
+          "rot": "Terminal · ensayo sin cuota",
+          "icone": "terminal",
+          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# um \"agente\" lê o arquivo, pensa 2 s e grava o arquivo inteiro (como a ferramenta Write)\nagente() { c=$(cat \"$1/config.txt\"); sleep 2; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A & agente . 's/versao = 1/versao = 2/' B & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A & agente ../wt-b 's/versao = 1/versao = 2/' B & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Salida capturada (19/10/2026)",
+            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nA gravou\nB gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>En A, los dos dijeron \"gravou\" y la versión 2 desapareció. En B, los dos cambios entraron. El orden de \"A gravou\" y \"B gravou\" varía de una ronda a otra; el resultado no.</p>"
+          },
+          {
+            "rot": "Conflicto: la buena señal",
+            "html": "<p>Dos worktrees cambiando la MISMA línea (cor roxo × cor preto), capturado en el mismo repositorio:</p><pre>Auto-merging config.txt\nCONFLICT (content): Merge conflict in config.txt\nAutomatic merge failed; fix conflicts and then commit the result.\nsaída: 1</pre><p>En un checkout único, esto sería una pérdida callada. Aquí git se detiene y lo muestra. Quien lo resuelve es el orquestador (o tú), no uno de los dos agentes.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Worktree en las herramientas",
+      "sub": "Claude Code 2.1.303 y Codex CLI 0.163.0, según las docs leídas el 19/10/2026.",
+      "passos": [
+        {
+          "titulo": "claude --worktree",
+          "sub": "sesión aislada",
+          "texto": [
+            "claude --worktree [nombre] crea el worktree en .claude/worktrees/[nombre] y abre la sesión allí. Necesita al menos un commit y, en el modo interactivo, que la carpeta esté marcada como de confianza (ejecuta claude una vez en ella).",
+            "Los archivos ignorados por git, como .env, no van al worktree; lístalos en un .worktreeinclude en la raíz para copiarlos."
+          ],
+          "exemplo": {
+            "rot": "Ojo",
+            "texto": "Los hooks con ${CLAUDE_PROJECT_DIR} siguen corriendo en el checkout principal; lo que acompaña al worktree es el campo cwd del hook."
+          }
+        },
+        {
+          "titulo": "Subagente",
+          "sub": "isolation: worktree",
+          "texto": [
+            "En el frontmatter, isolation: worktree le da al subagente un worktree temporal, que desaparece solo si no cambia nada.",
+            "Ojo: la branch parte de la branch predeterminada, no del HEAD de tu sesión. Lo que no commiteaste no está ahí."
+          ]
+        },
+        {
+          "titulo": "Sesiones y equipos",
+          "sub": "quién aísla solo",
+          "texto": [
+            "La sesión en segundo plano (claude --bg) entra en un worktree antes de editar. Los agent teams no aíslan: divide los archivos por dueño.",
+            "Una limpieza periódica elimina los worktrees creados por Claude que superaron cleanupPeriodDays y no guardan trabajo."
+          ]
+        },
+        {
+          "titulo": "Codex",
+          "sub": "--worktree y -s",
+          "texto": [
+            "codex exec --worktree \"[pedido]\" corre en un worktree gestionado (no se combina con resume ni con --ephemeral). En la TUI, /worktree.",
+            "Sandbox: -s read-only para quien solo revisa, -s workspace-write para quien ejecuta. La doc pide evitar --dangerously-bypass-approvals-and-sandbox fuera de una VM dedicada."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Sandbox por rol, probado sin modelo",
+      "sub": "codex sandbox corre un comando cualquiera con las mismas reglas que Codex usa en los suyos. No llama a ningún modelo.",
+      "blocos": [
+        {
+          "rot": "Terminal · ensayo sin cuota",
+          "icone": "cadeado",
+          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/sbx; rm -rf $E && mkdir -p $E && cd $E\ncodex sandbox -c sandbox_mode=read-only -- bash -c 'echo x > a.txt 2>/dev/null && echo \"read-only: gravou\" || echo \"read-only: bloqueado na pasta\"'\ncodex sandbox -c sandbox_mode=workspace-write -- bash -c 'echo x > b.txt && echo \"workspace-write: gravou na pasta\"; echo x > ~/fora-sbx.txt 2>/dev/null && echo \"gravou fora\" || echo \"workspace-write: bloqueado fora da pasta\"'\nls; ls ~/fora-sbx.txt 2>&1 | tail -1"
+        },
+        {
+          "rot": "Terminal · worktree de verdad en el proyecto de práctica",
+          "icone": "git",
+          "conteudo": "# terminal 1: abre la sesión ya dentro del worktree (no hace falta pedir nada)\ncd ~/treino-multi && claude --worktree treino-a\n\n# terminal 2, con la sesión abierta:\ncd ~/treino-multi && git worktree list | grep -c \".claude/worktrees/treino-a\"\ngit branch --list worktree-treino-a\n\n# terminal 1: /exit (worktree sin cambios: elige remover, si pregunta). Después:\ngit worktree list | wc -l"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Salida capturada (19/10/2026)",
+            "html": "<pre>bash: line 1: a.txt: Read-only file system\nread-only: bloqueado na pasta\nworkspace-write: gravou na pasta\nbash: line 1: ~/fora-sbx.txt: Read-only file system\nworkspace-write: bloqueado fora da pasta\nb.txt\nls: cannot access '~/fora-sbx.txt': No such file or directory</pre><p>Edición declarada: la ruta de la carpeta personal aparece como <code>~</code>. El read-only no escribió ni dentro; el workspace-write escribió <code>b.txt</code> y fue bloqueado fuera.</p>"
+          },
+          {
+            "rot": "Error común: repositorio sin commit",
+            "html": "<p>El worktree parte de un commit. En un <code>git init</code> recién creado, <code>claude --worktree</code> termina antes de llamar al modelo (capturado con Claude Code 2.1.303):</p><pre>Error creating worktree: Failed to resolve base branch \"HEAD\": git rev-parse returned no commit for HEAD (for example in a new repository, or on a branch without a commit yet), so Claude Code has nothing to base a worktree on. (…)\nsaída: 1</pre><p>Haz un commit y vuelve a correrlo.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Práctica",
+      "sub": "Dos ensayos y un worktree de verdad.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E9 · La escritura perdida",
+          "min": "10 min",
+          "texto": "Corre el ensayo de los dos agentes.",
+          "pronto": "en A, <code>cat config.txt</code> muestra <code>versao = 1</code> (el cambio de B desapareció); en B, muestra <code>versao = 2</code> y <code>cor = verde</code>; la última línea es <code>3</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E10 · Sandbox por rol",
+          "min": "5 min",
+          "texto": "Corre el ensayo del codex sandbox.",
+          "pronto": "aparecen <code>read-only: bloqueado na pasta</code>, <code>workspace-write: gravou na pasta</code> y <code>workspace-write: bloqueado fora da pasta</code>, y <code>ls</code> muestra solo <code>b.txt</code>."
+        },
+        {
+          "id": "e3",
+          "titulo": "E11 · Un worktree de Claude Code",
+          "min": "10 min",
+          "texto": "En el proyecto de práctica, abre claude --worktree treino-a en una terminal y verifica desde otra. Al salir, un worktree limpio se elimina (en una sesión con nombre, Claude pregunta antes).",
+          "pronto": "con la sesión abierta, <code>git worktree list | grep -c \".claude/worktrees/treino-a\"</code> → <code>1</code> y la branch <code>worktree-treino-a</code> existe; después de salir, <code>git worktree list | wc -l</code> → <code>1</code> (si quedó, <code>git worktree remove .claude/worktrees/treino-a</code>)."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Prueba de la clase",
+      "perguntas": [
+        {
+          "p": "Dos agentes editaron el mismo archivo en el mismo checkout y los dos dijeron \"gravou\". ¿Qué puede haber pasado?",
+          "opcoes": [
+            "Entraron los dos cambios",
+            "La última escritura borró la otra, sin error",
+            "Git avisó del conflicto",
+            "El segundo agente esperó al primero"
+          ],
+          "certa": 1,
+          "explica": "Leer, pensar y escribir el archivo entero es una carrera: quien escribe al último gana. Nada avisa.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "¿Por qué el conflicto en el merge de dos worktrees es una buena señal?",
+          "opcoes": [
+            "Porque es raro",
+            "Porque convierte la pérdida silenciosa en un punto de decisión visible",
+            "Porque git lo resuelve solo",
+            "Porque borra las dos versiones"
+          ],
+          "certa": 1,
+          "explica": "Git se detiene y muestra las dos versiones. Quien decide es el orquestador o tú.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "Un subagente con isolation: worktree no encuentra el cambio que hiciste y no commiteaste. ¿Por qué?",
+          "opcoes": [
+            "Bug",
+            "Su worktree parte de la branch predeterminada, no del HEAD ni de los archivos de tu sesión",
+            "Falta .worktreeinclude",
+            "Está en read-only"
+          ],
+          "certa": 1,
+          "explica": "Según la doc: la branch parte de la branch predeterminada. Haz commit antes de delegar, o pasa el diff en el pedido.",
+          "ref": "passos"
+        },
+        {
+          "p": "¿Qué sandbox de Codex darle a un revisor que solo ejecuta pruebas y lee?",
+          "opcoes": [
+            "danger-full-access",
+            "workspace-write",
+            "read-only",
+            "Ninguno"
+          ],
+          "certa": 2,
+          "explica": "read-only no escribe ni en la carpeta. workspace-write es para quien ejecuta; el acceso total la doc solo lo recomienda dentro de una VM dedicada.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "En tres frases",
+      "itens": [
+        {
+          "t": "Checkout único pierde",
+          "texto": "Dos agentes escribiendo el mismo archivo: el último gana y nadie avisa."
+        },
+        {
+          "t": "Worktree por escritor",
+          "texto": "Cada agente que escribe recibe una copia y una branch; el merge las junta o muestra el conflicto."
+        },
+        {
+          "t": "Sandbox por rol",
+          "texto": "Revisor en read-only, ejecutor en workspace-write; acceso total solo en una VM dedicada."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir más allá",
+      "links": [
+        {
+          "t": "Claude Code: Run parallel sessions with worktrees",
+          "href": "https://code.claude.com/docs/en/worktrees",
+          "icone": "git"
+        },
+        {
+          "t": "Codex CLI: referencia de comandos (exec --worktree, sandbox)",
+          "href": "https://developers.openai.com/codex/cli/reference",
+          "icone": "terminal"
+        },
+        {
+          "t": "git worktree (documentación de git)",
+          "href": "https://git-scm.com/docs/git-worktree",
+          "icone": "arquivo"
+        },
+        {
+          "t": "Curso 4 de la formación: sandbox de red y de archivos como seguridad",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "icone": "escudo"
+        }
+      ]
+    }
+  ]
+}

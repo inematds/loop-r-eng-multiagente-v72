@@ -1,0 +1,292 @@
+{
+  "slug": "fanout",
+  "num": 3,
+  "menu": "Fan-out",
+  "titulo": "Orchestrator-workers and fan-out",
+  "titulo_curto": "Fan-out",
+  "minutos": 20,
+  "lead": "Fan-out is an orchestrator releasing N workers on independent items and gathering only what matters. It works when each item fits in a clear request, has a cap, and returns a line you can check. In this lesson you run a shell fan-out with a fake agent, watch the time drop, and redo only the rejected item.",
+  "objetivo": "run a fan-out with N workers, a cap per item, and a short consolidation, redoing only the rejected item.",
+  "competencias": [
+    "orquestrar-trabalhadores",
+    "escrever-pedido-de-delegacao",
+    "consolidar-resultados",
+    "reprocessar-so-reprovados"
+  ],
+  "aprende": [
+    {
+      "icone": "camadas",
+      "t": "The forms of fan-out in Claude Code and in the shell"
+    },
+    {
+      "icone": "caneta",
+      "t": "The delegation request: goal, format, sources, and boundaries"
+    },
+    {
+      "icone": "relogio",
+      "t": "Cap per worker and return in a file"
+    },
+    {
+      "icone": "check",
+      "t": "Consolidate by the last line and redo only the rejected one"
+    }
+  ],
+  "hero_alt": "A thick cable that splits into five thin cables connected to five identical modules with a green LED.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "A fan-out with control",
+      "sub": "The orchestrator plans and merges; the workers only do their part. Click each step.",
+      "nos": [
+        {
+          "icone": "cerebro",
+          "titulo": "Orchestrator",
+          "sub": "splits and describes",
+          "detalhe": "In Anthropic's research system, the lead breaks down the question and describes each subtask. A vague request (\"research the chip shortage\") made three subagents repeat the same search. The rule written in their prompt: simple fact, 1 agent with 3 to 10 calls; comparison, 2 to 4 subagents; complex research, more than 10."
+        },
+        {
+          "icone": "lista",
+          "titulo": "List",
+          "sub": "frozen items",
+          "detalhe": "One item per line, with the input already ready. If an item depends on the result of another, it doesn't go in the fan-out: it goes afterward (hybrid, lesson 1)."
+        },
+        {
+          "icone": "fila",
+          "titulo": "N workers",
+          "sub": "xargs -P / Agent",
+          "forte": true,
+          "itens": [
+            {
+              "icone": "relogio",
+              "t": "timeout per item"
+            },
+            {
+              "icone": "arquivo",
+              "t": "result in a file"
+            }
+          ],
+          "detalhe": "Each worker receives only its own item, runs with a cap (timeout), and writes the result to a file. In Claude Code, the same idea is asking for several subagents in one message; the limit is 20 running at the same time."
+        },
+        {
+          "icone": "check",
+          "titulo": "Consolidate",
+          "sub": "last line only",
+          "detalhe": "The orchestrator reads the last line of each file (OK or FALHA: reason), not the whole text. Anthropic calls this avoiding the game of telephone: the worker writes the artifact and passes back a lightweight reference."
+        }
+      ],
+      "volta": "Rejected? Only that item goes back on the list; approved ones are not redone",
+      "legenda": "A fan-out of 500 mechanical files needs no model at all: it's a script. An agent comes in when each item requires judgment."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "The forms of fan-out today",
+      "sub": "Per the Claude Code docs (Run agents in parallel, read on Oct 19, 2026) and Codex CLI 0.163.0.",
+      "passos": [
+        {
+          "titulo": "Subagents",
+          "sub": "in one session",
+          "texto": [
+            "Ask for several subagents in the same message. The results come back to the conversation that created them.",
+            "For a large, repeatable batch, the docs point to dynamic workflows (a script that runs many subagents and compares their results) and /batch, which splits a large change across 5 to 30 subagents, each in its own worktree."
+          ]
+        },
+        {
+          "titulo": "Sessions",
+          "sub": "agent view",
+          "texto": [
+            "claude --bg drops a session into the background; claude agents shows them all on one screen. Before editing, the background session moves into its own worktree in .claude/worktrees/.",
+            "Each session spends its own quota. Merge the results by file, in a lead session or in a script."
+          ]
+        },
+        {
+          "titulo": "Agent teams",
+          "sub": "experimental",
+          "texto": [
+            "Off by default (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1). A lead and teammates with a task list and messages between them. One team per session, no nested teams, and /resume does not restore in-process teammates.",
+            "Teammates don't get a worktree: two editing the same file overwrite each other. Split the files by owner."
+          ]
+        },
+        {
+          "titulo": "Shell",
+          "sub": "claude -p / codex exec",
+          "texto": [
+            "Outside the session, an xargs -P with claude -p or codex exec per item. This is the one you control best: cap, output file, resume.",
+            "This is the form used in the rehearsal below, because you can swap the agent for a fake script."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Fan-out in shell, with a rehearsal",
+      "sub": "The AGENTE is any command that reads the request on stdin. For the rehearsal, use a script that sleeps 2 s and answers.",
+      "blocos": [
+        {
+          "rot": "fanout.sh · save it in ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "#!/usr/bin/env bash\n# fanout.sh — one worker per line of the list, N at a time, short return in a file.\n# Usage: fanout.sh <lista.txt> <pasta-saida> [N]\n#   AGENTE = command that reads the request on stdin (default: claude -p). For a rehearsal: a fake script.\n#   TETO   = seconds per worker (default 600)\nset -u\nLISTA=\"${1:?uso: fanout.sh <lista.txt> <pasta-saida> [N]}\"; OUT=\"${2:?pasta de saída}\"; N=\"${3:-3}\"\nexport OUT AGENTE=\"${AGENTE:-claude -p}\" TETO=\"${TETO:-600}\"\nmkdir -p \"$OUT\"\n\ntrabalho() {\n  item=\"$1\"; nome=$(printf '%s' \"$item\" | tr -cs 'a-zA-Z0-9' '-' | cut -c1-40)\n  if [ -s \"$OUT/$nome.md\" ] && [ \"$(tail -1 \"$OUT/$nome.md\")\" = OK ]; then\n    echo \"pula $nome (aprovado)\"; return 0     # only the rejected one comes back\n  fi\n  printf 'Task: %s\\nAnswer in at most 5 lines. Last line: OK, or FALHA: <reason>.\\n' \"$item\" \\\n    | timeout \"$TETO\" $AGENTE > \"$OUT/$nome.tmp\" 2>&1\n  rc=$?\n  if [ $rc -eq 0 ]; then mv \"$OUT/$nome.tmp\" \"$OUT/$nome.md\"; echo \"feito $nome\"\n  else mv \"$OUT/$nome.tmp\" \"$OUT/$nome.erro\"; echo \"erro $nome (rc=$rc)\"; fi\n}\nexport -f trabalho\n\ngrep -v '^[[:space:]]*$' \"$LISTA\" | xargs -d '\\n' -P \"$N\" -I{} bash -c 'trabalho \"$1\"' _ {}\n\n# the orchestrator merges only the last lines: that is what goes back into its context\nfor f in \"$OUT\"/*.md; do [ -e \"$f\" ] && printf '%s: %s\\n' \"$(basename \"$f\" .md)\" \"$(tail -1 \"$f\")\"; done > \"$OUT/../consolidado.txt\"\necho \"itens: $(grep -cv '^[[:space:]]*$' \"$LISTA\") · feitos: $(ls \"$OUT\"/*.md 2>/dev/null | wc -l) · com erro: $(ls \"$OUT\"/*.erro 2>/dev/null | wc -l) · OK: $(grep -c ': OK$' \"$OUT/../consolidado.txt\") · FALHA: $(grep -c ': FALHA' \"$OUT/../consolidado.txt\")\""
+        },
+        {
+          "rot": "Terminal · no-quota rehearsal (fake agent)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x fanout.sh\nE=${TMPDIR:-/tmp}/ensaio-multi/fanout; rm -rf $E && mkdir -p $E\ncat > $E/agente-falso.sh <<'SH'\n#!/usr/bin/env bash\npedido=$(cat); sleep 2\ncase \"$pedido\" in\n  *quebrado*) printf 'não consegui ler o arquivo\\nFALHA: arquivo quebrado\\n' ;;\n  *) printf 'resumo de uma linha\\nOK\\n' ;;\nesac\nSH\nchmod +x $E/agente-falso.sh\nprintf 'resumir docs/a.md\\nresumir docs/b.md\\nresumir docs/quebrado.md\\nresumir docs/c.md\\nresumir docs/d.md\\n' > $E/lista.txt\n\ntime AGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 1   # one at a time\nrm -rf $E/saida\ntime AGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 3   # three at a time\nAGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 3        # again: nothing is redone\ncat $E/consolidado.txt"
+        },
+        {
+          "rot": "Terminal · real, with 2 or 3 items from your project",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\nprintf 'Resuma runtime/POLITICA.md em 3 linhas\\nResuma runtime/ROTEAMENTO.md em 3 linhas\\n' > lista-real.txt\n./fanout.sh lista-real.txt real/saida 2 < /dev/null\ncat real/consolidado.txt"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Captured output (10/19/2026)",
+            "html": "<pre>feito resumir-docs-a-md\nfeito resumir-docs-b-md\nfeito resumir-docs-quebrado-md\nfeito resumir-docs-c-md\nfeito resumir-docs-d-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\n\nreal\t0m10.094s\n(…)\nfeito resumir-docs-a-md\nfeito resumir-docs-b-md\nfeito resumir-docs-quebrado-md\nfeito resumir-docs-d-md\nfeito resumir-docs-c-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\n\nreal\t0m4.054s\n(…)\npula resumir-docs-b-md (aprovado)\npula resumir-docs-a-md (aprovado)\npula resumir-docs-c-md (aprovado)\npula resumir-docs-d-md (aprovado)\nfeito resumir-docs-quebrado-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\nresumir-docs-a-md: OK\nresumir-docs-b-md: OK\nresumir-docs-c-md: OK\nresumir-docs-d-md: OK\nresumir-docs-quebrado-md: FALHA: arquivo quebrado</pre><p>Cuts: the <code>user</code>/<code>sys</code> lines from time. The time dropped from 10 s to 4 s because the fake agent only sleeps: it shows the shape of the gain, not the measurement of a real agent. In the third round, only the rejected item ran again.</p>"
+          },
+          {
+            "rot": "Real round (Oct 19, 2026)",
+            "html": "<pre>feito Resuma-runtime-ROTEAMENTO-md-em-3-linhas\nfeito Resuma-runtime-POLITICA-md-em-3-linhas\nitens: 2 · feitos: 2 · com erro: 0 · OK: 2 · FALHA: 0\n(…)\nResuma-runtime-POLITICA-md-em-3-linhas: OK\nResuma-runtime-ROTEAMENTO-md-em-3-linhas: OK</pre><p>Two <code>claude -p</code> in parallel, 48 s total, in the training project. The text of each summary stayed in <code>real/saida/</code>; two lines reached the orchestrator.</p>"
+          },
+          {
+            "rot": "Common mistake: cap too short",
+            "html": "<p>With <code>TETO=1</code>, no worker finishes: the <code>timeout</code> cuts them all with code 124 and the result goes to <code>.erro</code>, not to <code>.md</code>.</p><pre>erro resumir-docs-a-md (rc=124)\nerro resumir-docs-quebrado-md (rc=124)\nerro resumir-docs-b-md (rc=124)\nerro resumir-docs-c-md (rc=124)\nerro resumir-docs-d-md (rc=124)\nitens: 5 · feitos: 0 · com erro: 5 · OK: 0 · FALHA: 0</pre><p>A cap is mandatory, but calibrated: run one real item alone, measure it, and leave some slack. Without a cap, one stuck worker holds up the whole batch.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "The delegation request",
+      "sub": "When the fan-out happens inside the session, you are the orchestrator, making the request. The four fields come from Anthropic's post.",
+      "blocos": [
+        {
+          "rot": "Prompt · fan-out with subagents in one session",
+          "icone": "chat",
+          "conteudo": "Split this into subagents, one per item in the list below, all in the same message.\nFor each subagent, write:\n- Goal: <what this item needs to answer>\n- Output format: at most 5 lines; last line OK or FALHA: <reason>; write to saida/<item>.md\n- Sources and tools: <files or folders it may read>; do not edit anything outside saida/\n- Boundary: do not handle the other items; if it depends on another item, stop and say which one\nThen read only the last line of each file and give me the item → OK/FALHA table.\nItems:\n<item 1>\n<item 2>\n<item 3>"
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Practice",
+      "sub": "Rehearsal first; then two real items.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E5 · Fan-out with a fake agent",
+          "min": "10 min",
+          "texto": "Save fanout.sh and run the whole rehearsal.",
+          "pronto": "the N=1 round takes about 10 s and the N=3 round about 4 s; both print <code>OK: 4 · FALHA: 1</code>; the third prints four <code>pula … (aprovado)</code> lines and one <code>feito resumir-docs-quebrado-md</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E6 · Two real items",
+          "min": "10 min",
+          "texto": "Run the real block (it uses claude -p, through your subscription). If an item comes out FALHA, read only its file and run fanout.sh again.",
+          "pronto": "<code>cat real/consolidado.txt</code> shows 2 lines, each ending in <code>OK</code> or <code>FALHA: …</code>, and <code>ls real/saida/*.erro</code> finds nothing."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Lesson quiz",
+      "perguntas": [
+        {
+          "p": "Why does the orchestrator read only the last line of each result?",
+          "opcoes": [
+            "To save disk space",
+            "So it doesn't pull the whole job back into its own context: the artifact stays in the file and only a light reference comes back",
+            "Because the rest is always junk",
+            "Because xargs cuts it off"
+          ],
+          "certa": 1,
+          "explica": "It's the same principle as the subagent: the detail stays out. When it needs to, the orchestrator opens only the file of the failed item.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "What was missing from the request that made three Anthropic subagents repeat the same search?",
+          "opcoes": [
+            "A bigger model",
+            "Objective, output format, sources, and clear boundaries for each subagent",
+            "More subagents",
+            "Timeout"
+          ],
+          "certa": 1,
+          "explica": "With a vague request, each subagent interpreted it in its own way and the work was duplicated. The four fields split up the work.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "In the second round of fanout.sh, who runs again?",
+          "opcoes": [
+            "Everyone",
+            "Only the items whose last line is not OK",
+            "None",
+            "Only the ones that hit the timeout"
+          ],
+          "certa": 1,
+          "explica": "Approved items are not reprocessed. FALHA and .erro come back; this is the rule \"only the failed one comes back\" from the lesson 1 kit.",
+          "ref": "codigo"
+        },
+        {
+          "p": "Two teammates in an agent team need to edit the same file. What does the doc recommend?",
+          "opcoes": [
+            "Nothing, the team sorts it out",
+            "Split the work so each teammate owns different files, because the team does not isolate in a worktree",
+            "Turn on /batch",
+            "Use fork"
+          ],
+          "certa": 1,
+          "explica": "Agent teams don't give each teammate a worktree: editing the same file overwrites it. Partition by owner, or isolation (lesson 5).",
+          "ref": "passos"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "In three sentences",
+      "itens": [
+        {
+          "t": "Frozen items",
+          "texto": "Only what doesn't depend on another item goes into the fan-out; the rest goes before or after."
+        },
+        {
+          "t": "Cap and file",
+          "texto": "Each worker with a timeout, a saved result, and a last line of OK or FALHA."
+        },
+        {
+          "t": "Only the failed one comes back",
+          "texto": "The orchestrator reads the last lines and reruns only what failed."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Going further",
+      "links": [
+        {
+          "t": "Claude Code: Run agents in parallel (comparison of the approaches)",
+          "href": "https://code.claude.com/docs/en/agents",
+          "icone": "camadas"
+        },
+        {
+          "t": "Claude Code: Agent teams (experimental, limits)",
+          "href": "https://code.claude.com/docs/en/agent-teams",
+          "icone": "robo"
+        },
+        {
+          "t": "Anthropic: How we built our multi-agent research system",
+          "href": "https://www.anthropic.com/engineering/multi-agent-research-system",
+          "icone": "lupa"
+        },
+        {
+          "t": "Course 2 of the track: headless loop with flock and cap",
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
+          "icone": "seta"
+        }
+      ]
+    }
+  ]
+}

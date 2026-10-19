@@ -1,0 +1,270 @@
+{
+  "slug": "claude-codex",
+  "num": 7,
+  "menu": "Claude + Codex",
+  "titulo": "Claude + Codex team: routing by role",
+  "titulo_curto": "Claude + Codex",
+  "minutos": 20,
+  "lead": "Two models from different houses make mistakes in different places. That holds when each one has a role: one does the work, the other reviews by reading only, with the same briefing and the real artifact. In this lesson you route roles by level, rehearse the bridge to Codex without spending quota, and have Codex actually review a script from this course.",
+  "objetivo": "route each role to the right level and tool, and have Codex review, by reading only, what Claude built.",
+  "competencias": [
+    "rotear-por-nivel",
+    "revisao-cruzada",
+    "reconciliar-achados"
+  ],
+  "aprende": [
+    {
+      "icone": "camadas",
+      "t": "The four levels: smallest, executor, top, and super"
+    },
+    {
+      "icone": "lista",
+      "t": "The routing card: who does the first pass and who checks it"
+    },
+    {
+      "icone": "terminal",
+      "t": "The codex-exec.sh bridge, read-only by default"
+    },
+    {
+      "icone": "check",
+      "t": "Reconcile: accepted, rejected with evidence, or still open"
+    }
+  ],
+  "hero_alt": "Two different workstations side by side on a dark desk, sharing a notebook and a printed sheet.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Routing by role",
+      "sub": "Levels from the training project's ROTEAMENTO.md. Model names change; the level stays. Click each level.",
+      "estilo": "escada",
+      "nos": [
+        {
+          "icone": "check",
+          "titulo": "Smallest",
+          "sub": "triage, format, check",
+          "detalhe": "Start here. Classify, extract, check a criterion that already exists. Move up a level only if it gets it wrong. In the kit, the bridge to Codex uses this level by default."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Executor",
+          "sub": "the day-to-day work",
+          "detalhe": "Implement the plan, run tests, show the proof. This is the level for most of the workers in a fan-out."
+        },
+        {
+          "icone": "cerebro",
+          "titulo": "Top",
+          "sub": "plan, decide, review the hard stuff",
+          "forte": true,
+          "detalhe": "Planner and reviewer for risky changes. One per team is usually enough; it reads the others' summaries, not all the work."
+        },
+        {
+          "icone": "alvo",
+          "titulo": "Super",
+          "sub": "rare",
+          "detalhe": "Hard problem or big decision. Each call uses your subscription quota; record why you needed it."
+        }
+      ],
+      "legenda": "Rule 3 of ROTEAMENTO.md: review by another model catches errors the same model can't see. Rule 4: an agent calling an agent carries the project's instructions; for simple bridges, use a lean folder or claude --bare."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "The routing card",
+      "sub": "From the agente-claude-codex kit (prompts/05-usar-os-dois.md). It's an editorial starting point, not a measured ranking: change it when your own evidence calls for it.",
+      "passos": [
+        {
+          "titulo": "Plan",
+          "sub": "Claude → Codex critiques",
+          "texto": [
+            "One writes the plan with scope, assumptions, and acceptance tests, without implementing. The other reviews by reading only and attacks the assumptions.",
+            "At most two rounds of review. Output: plan v2 and a review file."
+          ]
+        },
+        {
+          "titulo": "Build",
+          "sub": "Claude on a branch → Codex reviews the diff",
+          "texto": [
+            "One implements on a branch (or worktree, lesson 5) and runs the tests. The other gets the briefing, the diff, and the test results, and looks for bugs and regressions before cosmetics.",
+            "No merge, deploy, or publishing without you."
+          ]
+        },
+        {
+          "titulo": "Hard bug",
+          "sub": "Codex with a limited goal",
+          "texto": [
+            "Codex with a small, measurable goal, with the tests plus a human checkpoint as the finish line.",
+            "End: measured success or a clear block, never \"almost.\""
+          ]
+        },
+        {
+          "titulo": "Switch sessions",
+          "sub": "handoff → prime",
+          "texto": [
+            "What passes from one to the other is files: AGENTS.md, tasks/current.md, handoffs/latest.md. That's the subject of the video below.",
+            "The card's single rule: the second agent gets the same briefing and the real artifact, never a retelling."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "The bridge to Codex",
+      "sub": "runtime/pontes/codex-exec.sh sends the request through stdin, accepts only read-only and workspace-write, and returns the final answer.",
+      "blocos": [
+        {
+          "rot": "Terminal · no-quota rehearsal (fake codex on the PATH)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x runtime/pontes/codex-exec.sh\nE=${TMPDIR:-/tmp}/ensaio-multi/ponte; rm -rf $E && mkdir -p $E/bin\ncat > $E/bin/codex <<'SH'\n#!/usr/bin/env bash\n# FAKE codex: finds the -o and writes PONG to it (no model is called)\nwhile [ $# -gt 0 ]; do [ \"$1\" = -o ] && out=$2; shift; done\ncat > /dev/null; echo PONG > \"$out\"\nSH\nchmod +x $E/bin/codex\nPATH=$E/bin:$PATH runtime/pontes/codex-exec.sh \"Responda apenas PONG\"; echo \"saída: $?\"\nPATH=$E/bin:$PATH runtime/pontes/codex-exec.sh \"apague tudo\" . danger-full-access; echo \"saída: $?\""
+        },
+        {
+          "rot": "Terminal · real: Codex reviews the gera-avalia.sh from lesson 4",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\nruntime/pontes/codex-exec.sh \"Responda apenas PONG\"; echo\nruntime/pontes/codex-exec.sh \"Review, without changing anything, the gera-avalia.sh file in this project. Look for real bugs and risks, not style. Answer in at most 6 lines; the last line is APROVADO or FALTA: <what to fix>.\" > revisao-codex.txt\ncat revisao-codex.txt"
+        },
+        {
+          "rot": "revisao.md · the reconciliation (you or Claude writes it)",
+          "icone": "caneta",
+          "conteudo": "# Codex review of gera-avalia.sh — <date>\n\naceito: a generator that fails or hits the cap was still being evaluated and could approve leftovers from a previous round → a round with rc≠0 is now REPROVADO without evaluating (lesson 4, tab \"Generator crashed\")\naberto: verificar.mjs runs the goal.md commands as bash → the goal must be a trusted, protected file (course 1: frozen tests; course 4: what the agent can read and run)\n\nagreement is not proof: what confirms each \"aceito\" is running the rehearsal again"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Captured output (10/19/2026)",
+            "html": "<pre>## ensaio (codex falso)\nPONG\nsaída: 0\nsandbox recusado pela POLITICA: danger-full-access\nsaída: 2\n\n## real (Codex CLI 0.163.0, pela assinatura)\nPONG\n- Se `claude`/`timeout` falhar ou atingir o limite, o script ignora o erro e ainda pode aprovar arquivos deixados por uma rodada anterior.\n- `verificar.mjs` executa como Bash os comandos do `goal.md`; um arquivo não confiável pode executar ações arbitrárias.\n- FALTA: abortar ou reprovar quando o gerador falhar e restringir a execução de goals a arquivos confiáveis.</pre><p>The review was done on the first version of gera-avalia.sh. The first finding was real and was fixed (the lesson 4 version is already the fixed one); the second stayed open, with an owner in another course. The ## headings separate the runs.</p>"
+          },
+          {
+            "rot": "Common mistake: Codex hangs",
+            "html": "<p>With no request on the command line and the input still open, <code>codex exec</code> keeps reading stdin and never exits. Captured with a <code>sleep</code> holding the input open and an 8 s cap:</p><pre>$ sleep 20 | timeout 8 codex exec -s read-only --skip-git-repo-check; echo \"saída: $?\"\nReading prompt from stdin...\nsaída: 124</pre><p>Without the <code>timeout</code>, it would stay stuck. The bridge sends the request through stdin and closes it with <code>-</code>; use <code>-o</code> to write only the final message and, in CI, <code>--json</code> for progress as events.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "video",
+      "titulo": "The same context for both",
+      "chave": "claude-codex"
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Practice",
+      "sub": "Rehearse the bridge, then do a real cross-review.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E15 · Bridge rehearsed",
+          "min": "5 min",
+          "texto": "Run the rehearsal with the fake codex.",
+          "pronto": "<code>PONG</code> and <code>saída: 0</code>; then <code>sandbox recusado pela POLITICA: danger-full-access</code> and <code>saída: 2</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E16 · Cross-review and reconciliation",
+          "min": "20 min",
+          "texto": "Run the bridge for real on gera-avalia.sh (or on a diff of your own: git diff main...HEAD &gt; diff.txt and ask for a review of diff.txt). Write revisao.md with one line per finding.",
+          "pronto": "the last line of <code>revisao-codex.txt</code> starts with <code>APROVADO</code> or <code>FALTA:</code>, and <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> equals the number of findings."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Lesson quiz",
+      "perguntas": [
+        {
+          "p": "Where should you start the level for a new role?",
+          "opcoes": [
+            "With the strongest, to be safe",
+            "With the smallest that works, moving up only if it gets it wrong",
+            "Always executor",
+            "With the cheapest, no exceptions"
+          ],
+          "certa": 1,
+          "explica": "Rule 1 of ROTEAMENTO.md. Each call uses up quota; moving up is a decision with a reason.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "What should the Codex reviewer receive?",
+          "opcoes": [
+            "A summary of what Claude did",
+            "The same task briefing and the real artifact (file, diff, test result)",
+            "Claude's entire conversation",
+            "Only the file name"
+          ],
+          "certa": 1,
+          "explica": "It is the single rule on the route card. A vague retelling hides the defect the reviewer should find.",
+          "ref": "passos",
+          "cert": true
+        },
+        {
+          "p": "The bridge received the danger-full-access sandbox. What happens?",
+          "opcoes": [
+            "It runs with full access",
+            "It refuses with exit 2: only read-only and workspace-write pass",
+            "It asks for confirmation",
+            "It quietly falls back to read-only"
+          ],
+          "certa": 1,
+          "explica": "The policy is in the script itself: \"sandbox recusado pela POLITICA\" and code 2.",
+          "ref": "codigo"
+        },
+        {
+          "p": "Codex pointed out two findings. What do you do with them?",
+          "opcoes": [
+            "Apply both without checking",
+            "Reconcile each one: aceito (with proof), rejeitado with evidence, or aberto with an owner",
+            "Ignore them, because Claude had already approved",
+            "Ask for a third opinion"
+          ],
+          "certa": 1,
+          "explica": "Agreement and disagreement prove nothing on their own. Each finding gets an outcome, and the aceito one is confirmed by running the rehearsal again.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "In three sentences",
+      "itens": [
+        {
+          "t": "Level per role",
+          "texto": "Menor, executor, topo, super: start at the smallest and record why you moved up."
+        },
+        {
+          "t": "Same briefing, real artifact",
+          "texto": "The second model reviews by reading only, using what the first one received and what it produced."
+        },
+        {
+          "t": "Reconcile",
+          "texto": "Each finding becomes aceito, rejeitado with evidence, or em aberto, in at most two rounds."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Going further",
+      "links": [
+        {
+          "t": "agente-claude-codex kit: prompts for using both",
+          "href": "https://github.com/inematds/agente-claude-codex/blob/main/prompts/05-usar-os-dois.md",
+          "icone": "arquivo"
+        },
+        {
+          "t": "The runtime's ROTEAMENTO.md (levels and rules)",
+          "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/ROTEAMENTO.md",
+          "icone": "camadas"
+        },
+        {
+          "t": "Recipe R1: Claude uses Codex",
+          "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/receitas/R1-claude-usa-codex.md",
+          "icone": "terminal"
+        },
+        {
+          "t": "Codex CLI: command reference",
+          "href": "https://developers.openai.com/codex/cli/reference",
+          "icone": "lupa"
+        }
+      ]
+    }
+  ]
+}

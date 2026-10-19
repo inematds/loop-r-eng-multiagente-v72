@@ -1,0 +1,290 @@
+{
+  "slug": "avaliador",
+  "num": 4,
+  "menu": "Evaluator",
+  "titulo": "Generator × evaluator",
+  "titulo_curto": "Generator × evaluator",
+  "minutos": 18,
+  "lead": "The most useful multi-agent setup has two roles: one does the work, the other checks it. The generator always says \"done\"; a separate evaluator decides, looking only at the artifact and returning feedback. In this lesson you connect the two in a loop with a cap on rounds, first with a fake generator that lies and then with the real Claude.",
+  "objetivo": "connect a generator to a separate evaluator that looks only at the artifact and returns feedback, with a cap on rounds.",
+  "competencias": [
+    "separar-gerador-e-avaliador",
+    "devolver-parecer-ao-gerador",
+    "limitar-rodadas"
+  ],
+  "aprende": [
+    {
+      "icone": "robo",
+      "t": "Why the evaluator is a separate process, not another paragraph in the prompt"
+    },
+    {
+      "icone": "check",
+      "t": "The kit's verificar.mjs as a code-based evaluator"
+    },
+    {
+      "icone": "chat",
+      "t": "The feedback that goes back to the generator and the cap on rounds"
+    },
+    {
+      "icone": "camadas",
+      "t": "The three-role team in one session"
+    }
+  ],
+  "hero_alt": "A 3D printer with a freshly printed part and, in front of it, a measuring bench checking an identical part.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "The generator × evaluator loop",
+      "sub": "The generator never grades itself. Click each step.",
+      "nos": [
+        {
+          "icone": "alvo",
+          "titulo": "Request + criteria",
+          "sub": "goal.md",
+          "detalhe": "The criteria live in a file the generator does not edit, in the kit's format: - [ ] `comando` → `texto esperado`. How to write criteria that can't be met by a shortcut is course 1 (Verification)."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Generator",
+          "sub": "does it and says \"done\"",
+          "detalhe": "Receives the request and, from round 2 on, the evaluator's feedback. What it says at the end (\"Pronto! criado conforme pedido\") is logged, but it decides nothing."
+        },
+        {
+          "icone": "arquivo",
+          "titulo": "Artifact",
+          "sub": "what was left on disk",
+          "detalhe": "The evaluator looks at the file, the diff, the test output. It does not read the generator's report. Rule from the agente-claude-codex kit: hand the second agent the real artifact, never a retelling of what the first one did."
+        },
+        {
+          "icone": "lupa",
+          "titulo": "Evaluator",
+          "sub": "another process",
+          "forte": true,
+          "itens": [
+            {
+              "icone": "check",
+              "t": "by code: verificar.mjs"
+            },
+            {
+              "icone": "robo",
+              "t": "by model: reviewer (no editing)"
+            }
+          ],
+          "detalhe": "By code, when possible: it runs each criterion and only approves if the output matches. By model, when the criterion calls for judgment: a reviewer that does not edit. Anthropic reports (March 24, 2026) that an agent that evaluates its own work tends to approve mediocre work; separating the roles was the fix."
+        },
+        {
+          "icone": "portao",
+          "titulo": "Decision",
+          "sub": "approved / feedback / stop",
+          "detalhe": "Approved: exits with 0. Rejected: the feedback excerpt goes back to the generator. Generator crashed: round rejected, without evaluating leftovers from a previous round. MAX rounds without approval: PARADO, exit 2."
+        }
+      ],
+      "volta": "Rejected? The feedback goes back to the generator, up to MAX rounds",
+      "legenda": "Agreement between two models is not independent proof: they may share the same wrong assumption. A code-based criterion comes first."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "The loop in 25 lines",
+      "sub": "The evaluator is the training project's verificar.mjs; the generator is any command that reads the request on stdin.",
+      "blocos": [
+        {
+          "rot": "gera-avalia.sh · save it in ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "#!/usr/bin/env bash\n# gera-avalia.sh — the generator does the work; the evaluator (another process, artifact only) checks it; up to MAX rounds.\n# Usage: gera-avalia.sh <goal.md> \"<request>\"\n#   GERADOR = command that reads request + feedback on stdin (default: claude -p --permission-mode acceptEdits)\n#   the evaluator is the kit's verificar.mjs: it runs each `comando` → `saída esperada` criterion\nset -u\nGOAL=\"${1:?uso: gera-avalia.sh <goal.md> \\\"<pedido>\\\"}\"; PEDIDO=\"${2:?pedido}\"\nGERADOR=\"${GERADOR:-claude -p --permission-mode acceptEdits}\"; MAX=\"${MAX:-3}\"; parecer=\"\"\nmkdir -p .gera-avalia\nfor r in $(seq 1 \"$MAX\"); do\n  printf '%s\\n%s\\n' \"$PEDIDO\" \"$parecer\" | timeout 600 $GERADOR > .gera-avalia/gerador-$r.log 2>&1\n  rc=$?\n  if [ $rc -ne 0 ]; then   # generator crashed or hit the cap: don't evaluate leftovers from a previous round\n    echo \"rodada $r · gerador falhou (rc=$rc) → REPROVADO\"; parecer=\"A rodada anterior falhou (rc=$rc).\"; continue\n  fi\n  echo \"rodada $r · gerador diz: $(tail -1 .gera-avalia/gerador-$r.log)\"\n  if node runtime/scripts/verificar.mjs \"$GOAL\" > .gera-avalia/avaliador-$r.log 2>&1; then\n    echo \"rodada $r · avaliador: $(tail -1 .gera-avalia/avaliador-$r.log) → APROVADO\"; exit 0\n  fi\n  echo \"rodada $r · avaliador: $(tail -1 .gera-avalia/avaliador-$r.log) → REPROVADO\"\n  parecer=\"O avaliador reprovou. Trecho do parecer: $(grep -A2 '^FALHA' .gera-avalia/avaliador-$r.log)\"\ndone\necho \"PARADO: $MAX rodadas sem aprovação\"; exit 2"
+        },
+        {
+          "rot": "goal-saudacao.md · the criteria (the generator does not edit them)",
+          "icone": "alvo",
+          "conteudo": "# Goal — greeting\n\n## Done criteria\n- [ ] `cat saudacao.txt` → `Olá, comunidade INEMA`\n- [ ] `wc -l < saudacao.txt` → `1`"
+        },
+        {
+          "rot": "Terminal · no-quota rehearsal (fake generator that gets it wrong and then fixes it)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x gera-avalia.sh && rm -f saudacao.txt\nE=${TMPDIR:-/tmp}/ensaio-multi/gera; rm -rf $E && mkdir -p $E\ncat > $E/gerador-falso.sh <<'SH'\n#!/usr/bin/env bash\nentrada=$(cat)\ncase \"$entrada\" in\n  *reprovou*) echo \"Olá, comunidade INEMA\" > saudacao.txt ;;   # 2nd time: it read the feedback\n  *) printf 'Olá comunidade INEMA\\n\\n' > saudacao.txt ;;      # 1st time: missing comma and an extra line\nesac\necho \"Pronto! saudacao.txt criado conforme pedido.\"\nSH\nchmod +x $E/gerador-falso.sh\nGERADOR=$E/gerador-falso.sh ./gera-avalia.sh goal-saudacao.md \"Crie saudacao.txt com uma linha: Olá, comunidade INEMA\"\necho \"saída: $?\""
+        },
+        {
+          "rot": "Terminal · real, with Claude as the generator",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi && rm -f saudacao.txt\n./gera-avalia.sh goal-saudacao.md \"Crie saudacao.txt com uma linha: Olá, comunidade INEMA\" < /dev/null\necho \"saída: $?\"; cat saudacao.txt"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Captured output (10/19/2026)",
+            "html": "<pre>## ensaio (gerador falso)\nrodada 1 · gerador diz: Pronto! saudacao.txt criado conforme pedido.\nrodada 1 · avaliador: 0/2 critérios OK → REPROVADO\nrodada 2 · gerador diz: Pronto! saudacao.txt criado conforme pedido.\nrodada 2 · avaliador: 2/2 critérios OK → APROVADO\nsaída: 0\n\n## real (Claude como gerador)\nrodada 1 · gerador diz: Terminei: criei o `saudacao.txt`. Conferi o arquivo e ele tem uma linha só: `Olá, comunidade INEMA`. Não fiz commit.\nrodada 1 · avaliador: 2/2 critérios OK → APROVADO\nsaída: 0\nOlá, comunidade INEMA</pre><p>In round 1 of the rehearsal, the generator said \"done\" with the comma missing and an extra line; the evaluator rejected both criteria. The ## headings separate the two runs.</p>"
+          },
+          {
+            "rot": "Stubborn generator: the cap stops it",
+            "html": "<p>A generator that ignores the feedback (it always writes \"Olá comunidade\") never passes. The round cap ends it with exit code 2:</p><pre>rodada 1 · gerador diz: Pronto, terminei.\nrodada 1 · avaliador: 1/2 critérios OK → REPROVADO\nrodada 2 · gerador diz: Pronto, terminei.\nrodada 2 · avaliador: 1/2 critérios OK → REPROVADO\nrodada 3 · gerador diz: Pronto, terminei.\nrodada 3 · avaliador: 1/2 critérios OK → REPROVADO\nPARADO: 3 rodadas sem aprovação\nsaída: 2</pre><p>Three rounds with no progress is the same stop rule as in course 2: call the human.</p>"
+          },
+          {
+            "rot": "Generator crashed, approved leftover",
+            "html": "<p>With the correct <code>saudacao.txt</code> from an earlier round still on disk and a generator that exits with an error, the first version of the script would approve the leftover. The version above rejects the round without evaluating:</p><pre>rodada 1 · gerador falhou (rc=1) → REPROVADO\nrodada 2 · gerador falhou (rc=1) → REPROVADO\nPARADO: 2 rodadas sem aprovação\nsaída: 2\nsaudacao.txt</pre><p>This defect was found by Codex's review in lesson 7, in a round run on this same script.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Inside the session: the three-role team",
+      "sub": "Recipe R2 of the training project does the same loop with subagents.",
+      "passos": [
+        {
+          "titulo": "planner",
+          "sub": "read-only",
+          "texto": [
+            "Returns up to 5 steps and the criteria in the comando → saída esperada format, plus the risks that need confirmation.",
+            "In the kit, it runs at the topo level; tools Read, Grep, Glob."
+          ]
+        },
+        {
+          "titulo": "executor",
+          "sub": "does it and shows the proof",
+          "texto": [
+            "Follows the plan one step at a time and shows the real output of each proof command. It can edit.",
+            "In the kit, executor level; it is the only role with Write and Edit."
+          ]
+        },
+        {
+          "titulo": "reviewer",
+          "sub": "runs the criteria",
+          "texto": [
+            "Runs each criterion, compares it with the real output, and ends with APROVADO or FALTA: with the list.",
+            "In the kit, smallest level. It has Bash to run the criteria, and that is why it can write (lesson 2)."
+          ]
+        },
+        {
+          "titulo": "How to ask",
+          "sub": "recipe R2",
+          "texto": [
+            "In a session open in ~/treino-multi: \"Use the time: the planner plans, the executor does, and the reviewer checks. Task: [your task]\".",
+            "The proof of the recipe: the answer ends with APROVADO and the requested file exists."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Practice",
+      "sub": "The rehearsal proves the loop; the real round proves it works with a model.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E7 · The loop with a fake generator",
+          "min": "10 min",
+          "texto": "Save gera-avalia.sh and goal-saudacao.md and run the rehearsal. Then swap the fake generator for one that never fixes anything.",
+          "pronto": "the rehearsal ends in <code>rodada 2 · avaliador: 2/2 critérios OK → APROVADO</code> and <code>saída: 0</code>; the stubborn one ends in <code>PARADO: 3 rodadas sem aprovação</code> and <code>saída: 2</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E8 · The loop with Claude",
+          "min": "10 min",
+          "texto": "First, commit the goal (<code>git add goal-saudacao.md &amp;&amp; git commit -qm goal</code>), so git flags it if it changes. Run the real version. Then write a goal of your own, with 2 or 3 criteria, for a small task in your project, and run it again.",
+          "pronto": "both rounds end with <code>→ APROVADO</code> and <code>saída: 0</code> within 3 rounds, and <code>git diff --exit-code -- goal-saudacao.md</code> → code 0 (the generator did not touch the criteria)."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Lesson quiz",
+      "perguntas": [
+        {
+          "p": "The generator wrote \"Pronto! criado conforme pedido\". What does that decide?",
+          "opcoes": [
+            "That it's done",
+            "Nothing: the evaluator decides, by looking at the artifact",
+            "That the round was good",
+            "That you can skip the evaluator"
+          ],
+          "certa": 1,
+          "explica": "In the rehearsal, the phrase came along with a wrong file. The report stays in the log; the decision belongs to verificar.mjs.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "What should the evaluator receive?",
+          "opcoes": [
+            "The generator's summary",
+            "The real artifact: file, diff, or test output, plus the criteria",
+            "The whole conversation",
+            "Only the request"
+          ],
+          "certa": 1,
+          "explica": "A vague recap hides the defect. The rule in the agente-claude-codex kit is to give the second agent the same briefing and the artifact.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "The generator exited with an error, but a correct saudacao.txt from before was on disk. What should the script do?",
+          "opcoes": [
+            "Evaluate and approve",
+            "Fail the round without evaluating",
+            "Delete the goal",
+            "Stop with 0"
+          ],
+          "certa": 1,
+          "explica": "Evaluating the leftover would approve work this round did not do. This was the defect Codex pointed out, and it was fixed in the script.",
+          "ref": "codigo"
+        },
+        {
+          "p": "Two different models agreed the work is correct. Does that prove it?",
+          "opcoes": [
+            "Yes, two votes are enough",
+            "No: they may share the same wrong assumption; code-based criteria come first",
+            "Yes, if they are from different companies",
+            "Only if it's the top model"
+          ],
+          "certa": 1,
+          "explica": "Agreement helps, but it is not independent proof. The criterion that runs and prints the expected output is the proof.",
+          "ref": "diagrama"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "In three sentences",
+      "itens": [
+        {
+          "t": "Two roles",
+          "texto": "One does, another checks, in separate processes; the generator never grades its own work."
+        },
+        {
+          "t": "Artifact and feedback",
+          "texto": "The evaluator reads what was left on disk and hands the failing part back to the generator."
+        },
+        {
+          "t": "Cap and failure",
+          "texto": "MAX rounds and it stops with 2; a round with a crashed generator is failed without being evaluated."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Going further",
+      "links": [
+        {
+          "t": "Course 1 of the track: Verification and evals (how to write the evaluator)",
+          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/",
+          "icone": "check"
+        },
+        {
+          "t": "Recipe R2: three-role team",
+          "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/receitas/R2-time-tres-papeis.md",
+          "icone": "robo"
+        },
+        {
+          "t": "verificar.mjs (26 lines, read it all)",
+          "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/scripts/verificar.mjs",
+          "icone": "terminal"
+        },
+        {
+          "t": "Anthropic: harness design for long-running apps (03/24/2026)",
+          "href": "https://anthropic.com/engineering/harness-design-long-running-apps",
+          "icone": "lupa"
+        }
+      ]
+    }
+  ]
+}

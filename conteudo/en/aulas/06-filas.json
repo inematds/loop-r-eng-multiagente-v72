@@ -1,0 +1,313 @@
+{
+  "slug": "filas",
+  "num": 6,
+  "menu": "Queues",
+  "titulo": "Queues, resuming, and collisions between sessions",
+  "titulo_curto": "Queues and collisions",
+  "minutos": 20,
+  "lead": "A queue in folders survives a crash: what was running goes back to the entrada. But the same resume that saves one copy tramples the other when two run in the same folder. In this lesson you interrupt and resume a queue, trigger the collision with numbers, lock with flock, and watch the collision guard ask before editing.",
+  "objetivo": "interrupt and resume a queue, trigger the collision of two queues in the same folder, and lock with flock and with the collision guard.",
+  "competencias": [
+    "retomar-fila-interrompida",
+    "evitar-execucao-duplicada",
+    "detectar-colisao-entre-sessoes"
+  ],
+  "aprende": [
+    {
+      "icone": "fila",
+      "t": "The states entrada, rodando, feito, and falhou"
+    },
+    {
+      "icone": "relogio",
+      "t": "Resuming: at least once, never exactly once"
+    },
+    {
+      "icone": "x",
+      "t": "Two copies in the same folder: each task runs twice"
+    },
+    {
+      "icone": "cadeado",
+      "t": "flock and the runtime's collision guard"
+    }
+  ],
+  "hero_alt": "Metal trays on a dark shelf: an input tray with folders, a middle one with a folder under lock, and an output tray.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "A task's path through the queue",
+      "sub": "The homemade queue from jornada-agentes, in folders. Click each state.",
+      "nos": [
+        {
+          "icone": "pasta",
+          "titulo": "entrada/",
+          "sub": "waiting its turn",
+          "detalhe": "Each .md file is a request. Running the queue again only picks up what is left here."
+        },
+        {
+          "icone": "robo",
+          "titulo": "rodando/",
+          "sub": "one at a time",
+          "forte": true,
+          "detalhe": "The queue moves the file to rodando/ and calls the agent. If the process dies (Ctrl+C, crash), the file stays here; on the next round, the resume moves everything from rodando/ back to entrada/. That's why the interrupted task runs again: it's \"at least once\"."
+        },
+        {
+          "icone": "check",
+          "titulo": "feito/ or falhou/",
+          "sub": "request + response",
+          "detalhe": "Exit 0 and a non-empty response: feito/, with the request and the response. Otherwise: falhou/, with the code and the message. Nothing is deleted without leaving a trace."
+        },
+        {
+          "icone": "cadeado",
+          "titulo": "Lock",
+          "sub": "one queue per folder",
+          "detalhe": "The resume assumes only ONE queue is running. With two, the second moves back to the entrada what the first is running, and both execute the same tasks. flock -n on the folder fixes it: the second copy exits right away."
+        }
+      ],
+      "volta": "Crashed? On the next round, rodando/ goes back to entrada/",
+      "legenda": "The truly durable queue, with a database, retries and gates, is the inemaccbot from the Queues course. Here is the minimal idea, so you can see the failure."
+    },
+    {
+      "tipo": "simfila",
+      "titulo": "Interrupt and resume",
+      "sub": "Run it, kill the process midway, and run it again. One task fails on the first run.",
+      "tarefas": [
+        "01 · summarize Monday's meeting",
+        "02 · list 3 risks of the loop",
+        "03 · generate this week's changelog",
+        "04 · review the README"
+      ],
+      "falha": 2,
+      "rot": {
+        "entrada": "entrada/",
+        "rodando": "rodando/",
+        "feito": "feito/",
+        "falhou": "falhou/",
+        "rodar": "Run the queue",
+        "parar": "Kill the process",
+        "zerar": "Start over"
+      },
+      "msg": {
+        "inicio": "Four requests in entrada/. Click \"Run the queue\".",
+        "rodando": "One task at a time: entrada/ → rodando/ → feito/ or falhou/.",
+        "parou": "Process killed. The task in progress stayed in rodando/, with no answer.",
+        "retoma": "Queue again: what was in rodando/ went back to entrada/ and runs once more.",
+        "fim": "Queue empty: all in feito/.",
+        "fimfalha": "Queue empty. One task went to falhou/ with the reason; the others went to feito/."
+      },
+      "legenda": "Illustrative simulation in the browser. The real rehearsal, with the script and a fake claude, is right below."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Rehearsal: resume, collision and flock",
+      "sub": "A FAKE claude on the PATH logs each run. Counting the log lines shows how many times each task ran.",
+      "blocos": [
+        {
+          "rot": "Terminal · no-quota rehearsal",
+          "icone": "terminal",
+          "conteudo": "cd ~/jornada-agentes                      # git clone https://github.com/inematds/jornada-agentes.git ~/jornada-agentes\nE=${TMPDIR:-/tmp}/ensaio-multi/fila; rm -rf $E && mkdir -p $E/bin\ncat > $E/bin/claude <<'SH'\n#!/usr/bin/env bash\n# FAKE claude: logs who ran what, takes 1 s and answers (no model is called)\necho \"$PPID $2\" >> \"${E_LOG:?}\"; sleep 1; echo \"resposta para: $2\"\nSH\nchmod +x $E/bin/claude; export PATH=$E/bin:$PATH E_LOG=$E/execucoes.log\nnova_fila() { rm -rf $E/fila $E_LOG; mkdir -p $E/fila/entrada; for i in 1 2 3 4; do echo \"tarefa $i\" > $E/fila/entrada/0$i.md; done; }\nF=./ferramentas/fila-caseira.sh\n\necho \"## 1) roda e é interrompida no meio\"\nnova_fila; timeout -s INT 2.5 $F $E/fila\necho \"rodando: $(ls $E/fila/rodando) · feito: $(ls $E/fila/feito | tr '\\n' ' ')\"\necho \"## 2) roda de novo: retoma\"\n$F $E/fila | tail -1\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas\"\n\necho \"## 3) duas filas na mesma pasta, ao mesmo tempo\"\nnova_fila; $F $E/fila > $E/a.log 2>&1 & $F $E/fila > $E/b.log 2>&1 & wait\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas · repetidas: $(cut -d' ' -f2- $E_LOG | sort | uniq -d | tr '\\n' ' ')\"\n\necho \"## 4) a mesma coisa com flock\"\nnova_fila; flock -n $E/fila.lock $F $E/fila > $E/a.log 2>&1 &\nsleep 0.3; flock -n $E/fila.lock $F $E/fila || echo \"outra fila já roda nesta pasta (saída $?)\"; wait\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Captured output (10/19/2026)",
+            "html": "<pre>## 1) roda e é interrompida no meio\n→ 01.md\n  feito\n→ 02.md\n  feito\n→ 03.md\nrodando: 03.md · feito: 01.md 02.md \n## 2) roda de novo: retoma\nentrada: 0 · feito: 4 · falhou: 0\nexecuções: 5 para 4 tarefas\n## 3) duas filas na mesma pasta, ao mesmo tempo\nexecuções: 8 para 4 tarefas · repetidas: tarefa 1 tarefa 2 tarefa 3 tarefa 4 \n## 4) a mesma coisa com flock\noutra fila já roda nesta pasta (saída 1)\nexecuções: 4 para 4 tarefas</pre><p>Run three times, same result. In 2, task 3 ran twice (interrupted and resumed): the task has to survive running again. In 3, all four ran twice. In 4, the second copy never even started.</p>"
+          },
+          {
+            "rot": "Inside the collision",
+            "html": "<p>The log of one of the two copies from run 3 (path shortened to <code>$E</code>):</p><pre>→ 01.md\nrm: cannot remove '$E/fila/fila/rodando/01.md': No such file or directory\n  feito\nmv: cannot stat '$E/fila/fila/entrada/02.md': No such file or directory\n→ 02.md\n(…)</pre><p>The <code>mv</code> fails because the other copy already took the file, but the script carries on and runs the task anyway, with the file the other copy moved to <code>rodando/</code>. And one copy's resume sends back to the input what the other is running. It is not a bug in an agent: the script was built for a single copy, and the lock is what guarantees that.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Sessions that edit the same file: the collision guard",
+      "sub": "The training project ships colisao.mjs, a hook that logs who edited each file and asks before another session edits it. Here, only the detection; the hook as a guard is course 4.",
+      "blocos": [
+        {
+          "rot": "Terminal · no-quota rehearsal (two sessions faked by the session_id)",
+          "icone": "cadeado",
+          "conteudo": "cd ~/treino-multi\nexport INEMA_RUNTIME_ESTADO=${TMPDIR:-/tmp}/ensaio-multi/colisao; rm -rf $INEMA_RUNTIME_ESTADO\nG=runtime/mods/runtime-guarda/hooks/colisao.mjs\nj() { printf '{\"session_id\":\"%s\",\"cwd\":\"%s\",\"tool_input\":{\"file_path\":\"notas.md\"}}' \"$1\" \"$PWD\"; }\necho \"rascunho\" > notas.md\nj sessao-AAAAAAAA | node $G pos                      # session A just edited notas.md\necho \"## A quer editar de novo\"; j sessao-AAAAAAAA | node $G pre; echo \"(saída $?)\"\necho \"## B quer editar o mesmo arquivo\"; j sessao-BBBBBBBB | node $G pre; echo; echo \"(saída $?)\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Captured output (10/19/2026)",
+            "html": "<pre>## A quer editar de novo\n(saída 0)\n## B quer editar o mesmo arquivo\n{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Guarda de colisão: Outra sessão (sessao-A) editou notas.md agora há pouco. Seguir mesmo assim, usar outra cópia (worktree) ou cancelar?\"}}\n(saída 0)</pre><p>The same session passes silently. The other one gets <code>\"permissionDecision\":\"ask\"</code>: Claude Code stops and asks. The default window is 30 min (<code>INEMA_COLISAO_MIN</code>). <code>INEMA_RUNTIME_ESTADO</code> sends the log to the rehearsal folder, so it does not mix with your real one.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Collisions that have already happened on this machine",
+      "sub": "From LESSONS.md of the INEMA monitoring project, with dates. Each one became a one-line rule.",
+      "passos": [
+        {
+          "titulo": "Scratchpad",
+          "sub": "19/10/2026",
+          "texto": [
+            "Courses built in parallel by subagents shared the same temporary folder. An image folder with a generic name collided: one agent's script skipped the image because the other's art already existed.",
+            "Rule: temporary folder with the task id in its name."
+          ]
+        },
+        {
+          "titulo": "Line that moved",
+          "sub": "19/10/2026",
+          "texto": [
+            "In a file shared between sessions (pending items, limits), editing by line number hit the wrong target: another session had inserted at the top.",
+            "Rule: match on the line's own text, never on the number."
+          ]
+        },
+        {
+          "titulo": "Someone else's commit",
+          "sub": "Oct 5 and Oct 19, 2026",
+          "texto": [
+            "An image generated straight into the repo folder was committed by another session that ran git add -A. And portal edits were committed by another session before their time.",
+            "Rule: generate outside the repo and prepare the change in an isolated worktree, even when the files are clean."
+          ]
+        },
+        {
+          "titulo": "Someone else's process",
+          "sub": "15/10/2026",
+          "texto": [
+            "A test server from another session was killed because it was using the \"usual\" port.",
+            "Rule: pick a truly free port and only kill a process after checking that its folder (/proc/[pid]/cwd) is yours."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Practice",
+      "sub": "Queue, collision, and guard, without spending quota.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E12 · Interrupt and resume",
+          "min": "10 min",
+          "texto": "Clone jornada-agentes and run parts 1 and 2 of the rehearsal.",
+          "pronto": "you see <code>rodando: 03.md · feito: 01.md 02.md</code> and then <code>execuções: 5 para 4 tarefas</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E13 · Collision and flock",
+          "min": "10 min",
+          "texto": "Run parts 3 and 4. Then write, in one line of your AGENTS.md or CLAUDE.md, the lock rule for the queue scripts you use.",
+          "pronto": "part 3 prints <code>execuções: 8 para 4 tarefas</code>; part 4 prints <code>outra fila já roda nesta pasta (saída 1)</code> and <code>execuções: 4 para 4 tarefas</code>; <code>grep -c flock AGENTS.md CLAUDE.md</code> finds your rule."
+        },
+        {
+          "id": "e3",
+          "titulo": "E14 · Collision guard",
+          "min": "10 min",
+          "texto": "Run the guard rehearsal in the practice project.",
+          "pronto": "session A exits with no text and <code>(saída 0)</code>; session B prints <code>\"permissionDecision\":\"ask\"</code> with <code>Outra sessão (sessao-A) editou notas.md</code>."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Lesson quiz",
+      "perguntas": [
+        {
+          "p": "The queue crashed in the middle of task 3. When it resumes, how many times will task 3 have run?",
+          "opcoes": [
+            "One",
+            "Two: the interrupted one and the resumed one",
+            "None",
+            "It depends on the model"
+          ],
+          "certa": 1,
+          "explica": "The resume moves rodando/ back to entrada/. It is \"at least once\": the task has to handle running again (idempotent).",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "Two copies of the home-made queue in the same folder. What did the rehearsal show?",
+          "opcoes": [
+            "They split the work",
+            "Each task ran twice: 8 runs for 4 tasks",
+            "The second one failed right away",
+            "Git reported a conflict"
+          ],
+          "certa": 1,
+          "explica": "The script was built for a single copy: the mv that fails does not skip the task, and one copy's resume gives back what the other is running.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "What is the minimum fix for the collision of two queues?",
+          "opcoes": [
+            "Rewrite the queue",
+            "flock -n on a folder lock: the second copy exits right away",
+            "Run slower",
+            "Use a better model"
+          ],
+          "certa": 1,
+          "explica": "One line fixes it. It is the same lock as the loop-longrun.sh from course 2.",
+          "ref": "codigo"
+        },
+        {
+          "p": "What does the collision guard answer when another session edited the file a moment ago?",
+          "opcoes": [
+            "Blocks forever",
+            "Asks for confirmation (ask) with the reason and suggests a worktree",
+            "Deletes the old edit",
+            "Nothing"
+          ],
+          "certa": 1,
+          "explica": "permissionDecision: ask. The decision goes back to whoever is in charge, with the option of using another copy.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "In three sentences",
+      "itens": [
+        {
+          "t": "Resume repeats",
+          "texto": "What was running goes back to the input; every task has to handle running again."
+        },
+        {
+          "t": "One queue per folder",
+          "texto": "Without a lock, two copies run everything twice; flock -n fixes it with one line."
+        },
+        {
+          "t": "Sessions cross paths",
+          "texto": "The guard asks before editing what another session touched; a worktree avoids the question."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Going further",
+      "links": [
+        {
+          "t": "Queues course (do-chat-ao-agente): the durable queue with inemaccbot",
+          "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/",
+          "icone": "fila"
+        },
+        {
+          "t": "fila-caseira.sh in jornada-agentes",
+          "href": "https://github.com/inematds/jornada-agentes/blob/main/ferramentas/fila-caseira.sh",
+          "icone": "terminal"
+        },
+        {
+          "t": "colisao.mjs (the runtime's collision guard)",
+          "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/mods/runtime-guarda/hooks/colisao.mjs",
+          "icone": "cadeado"
+        },
+        {
+          "t": "Course 4 of the track: hooks as a guard",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "icone": "escudo"
+        }
+      ]
+    }
+  ]
+}

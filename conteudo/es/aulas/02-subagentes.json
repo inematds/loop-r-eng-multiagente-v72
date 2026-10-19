@@ -1,0 +1,279 @@
+{
+  "slug": "subagentes",
+  "num": 2,
+  "menu": "Subagentes",
+  "titulo": "Subagentes: contexto limpio, retorno corto",
+  "titulo_curto": "Subagentes",
+  "minutos": 18,
+  "lead": "Un subagente hace la parte ruidosa en una ventana de contexto propia y devuelve solo el resumen. Vale por lo que no vuelve: logs, búsquedas y archivos que la conversación principal nunca va a volver a leer. En esta clase escribes un subagente de solo lectura con retorno de hasta 12 líneas y verificas, de verdad, el tamaño de lo que volvió.",
+  "objetivo": "crear un subagente de solo lectura con retorno de hasta 12 líneas y comprobar que su respuesta cabe en la conversación principal.",
+  "competencias": [
+    "escrever-subagente",
+    "restringir-ferramentas",
+    "definir-formato-de-retorno"
+  ],
+  "aprende": [
+    {
+      "icone": "memoria",
+      "t": "Qué recibe el subagente y qué devuelve"
+    },
+    {
+      "icone": "arquivo",
+      "t": "El archivo .claude/agents/[nome].md y los campos que importan"
+    },
+    {
+      "icone": "cadeado",
+      "t": "Herramientas restringidas: lo que la lista bloquea y lo que solo la instrucción pide"
+    },
+    {
+      "icone": "lista",
+      "t": "Retorno con formato fijo y línea de confianza"
+    }
+  ],
+  "hero_alt": "Placa de circuito principal conectada por un cable corto a una placa más pequeña dentro de una caja blindada propia.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Ida y vuelta de un subagente",
+      "sub": "Comportamiento de Claude Code 2.1.303, según la doc oficial leída el 19/10/2026. Haz clic en cada etapa.",
+      "nos": [
+        {
+          "icone": "usuario",
+          "titulo": "Conversación principal",
+          "sub": "tu contexto",
+          "detalhe": "Usa la conversación principal cuando hay ida y vuelta, cuando las fases comparten mucho contexto (planificar, implementar, probar), para un cambio rápido o cuando la latencia importa: un subagente que no es fork empieza de cero y tarda en situarse."
+        },
+        {
+          "icone": "enviar",
+          "titulo": "Pedido",
+          "sub": "lo que recibe",
+          "itens": [
+            {
+              "icone": "caneta",
+              "t": "el cuerpo del .md (prompt de sistema)"
+            },
+            {
+              "icone": "chat",
+              "t": "el mensaje de tarea escrito por Claude"
+            },
+            {
+              "icone": "arquivo",
+              "t": "CLAUDE.md/AGENTS.md y git status"
+            }
+          ],
+          "detalhe": "El subagente no recibe el prompt de sistema de Claude Code ni el historial de la conversación. Recibe el prompt del propio archivo, el mensaje de tarea, la jerarquía de CLAUDE.md (menos Explore y Plan, o con omitClaudeMd) y una instantánea del git status. Por eso el pedido debe citar rutas, no pegar contenido."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Subagente",
+          "sub": "ventana propia",
+          "forte": true,
+          "detalhe": "Corre con contexto, herramientas y permisos propios, y cuenta en el mismo límite de uso de tu suscripción. Puede abrir subagentes suyos hasta tres capas por debajo de la conversación por defecto; CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1 desactiva el anidamiento (el límite operativo del kit de la clase 1 es un nivel). Con 20 corriendo al mismo tiempo, el 21.º es rechazado."
+        },
+        {
+          "icone": "lista",
+          "titulo": "Resumen",
+          "sub": "lo que vuelve",
+          "detalhe": "Solo la respuesta final vuelve a la conversación. Muchos subagentes con retorno detallado llenan el contexto igual: Anthropic recomienda resúmenes condensados de cerca de 1.000 a 2.000 tokens (post de ingeniería de contexto, 29/09/2025). Pide datos estructurados, no narrativa."
+        }
+      ],
+      "volta": "¿Necesitas otro paso? La conversación pasa el resumen al siguiente subagente (encadenar)",
+      "legenda": "Fork es otra cosa: hereda la conversación entera (/subtask) y pierde el aislamiento de entrada. Sirve para una tarea lateral que necesita lo que ya se dijo."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Los campos que deciden",
+      "sub": "Del frontmatter soportado, cuatro cambian el comportamiento en el día a día.",
+      "passos": [
+        {
+          "titulo": "description",
+          "sub": "cuándo llamar",
+          "texto": [
+            "Claude delega cuando la tarea coincide con la descripción. Escribe cuándo usar y cuándo no usar, en una frase.",
+            "Un archivo nuevo en .claude/agents/ entra sin reiniciar, excepto cuando la carpeta agents/ no existía al inicio de la sesión."
+          ]
+        },
+        {
+          "titulo": "tools",
+          "sub": "lo que puede hacer",
+          "texto": [
+            "Lista de lo que puede usar. Sin el campo, hereda las de la conversación. Sin Write, Edit y Bash, no graba nada, por más que el modelo quiera.",
+            "disallowedTools con especificador, como Bash(git push *), quita la herramienta completa; para bloquear solo el comando, usa permissions.deny."
+          ]
+        },
+        {
+          "titulo": "model",
+          "sub": "nivel",
+          "texto": [
+            "Acepta apodo o inherit. Elige por el nivel del rol (clase 7), no por el nombre del día: los nombres cambian.",
+            "El kit del runtime usa opus, sonnet y haiku en los tres roles; tómalo como ejemplo de niveles distintos."
+          ]
+        },
+        {
+          "titulo": "Cuerpo",
+          "sub": "formato del retorno",
+          "texto": [
+            "El cuerpo del archivo se convierte en el prompt de sistema. Pon en él el formato de la respuesta: número máximo de líneas, caminho:linha como prueba y una línea final de confianza.",
+            "Es el formato que deja al orquestador leer 10 resúmenes sin llenar su propia ventana."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Un explorador de solo lectura",
+      "sub": "Crea el archivo, revisa los campos sin gastar cuota y luego haz una llamada real.",
+      "blocos": [
+        {
+          "rot": ".claude/agents/explorador.md · en ~/treino-multi",
+          "icone": "arquivo",
+          "conteudo": "---\nname: explorador\ndescription: Busca en el proyecto y devuelve solo el resumen. Úsalo para recorrer muchos archivos sin llenar la conversación principal.\ntools: Read, Grep, Glob\nmodel: inherit\n---\nEres el explorador. No modifiques nada.\nDevuelve como máximo 12 líneas:\n1. La respuesta en una frase.\n2. Hasta 8 líneas en el formato ruta:línea — qué hay ahí.\n3. Última línea: CONFIANÇA alta|média|baixa y lo que no verificaste."
+        },
+        {
+          "rot": "Terminal · ensayo sin cuota: revisar los subagentes del proyecto",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi\npython3 - .claude/agents/*.md <<'PY'\nimport sys, re\nfor f in sys.argv[1:]:\n    m = re.match(r\"---\\n(.*?)\\n---\", open(f, encoding=\"utf-8\").read(), re.S)\n    if not m:\n        print(f, \"→ SEM frontmatter\"); continue\n    d = {k.strip(): v.strip() for k, v in (l.split(\":\", 1) for l in m.group(1).splitlines() if \":\" in l)}\n    tools = d.get(\"tools\", \"(herda todas)\")\n    escreve = \"tools\" not in d or any(x in tools for x in (\"Write\", \"Edit\", \"Bash\"))\n    print(f\"{d.get('name', '?')} · tools: {tools} · model: {d.get('model', '(herda)')} · escreve: {'sim' if escreve else 'não'}\")\nPY"
+        },
+        {
+          "rot": "Terminal · llamada real (gasta un poco de la cuota)",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\nclaude -p \"Use o subagente explorador para descobrir onde este projeto define a própria versão e quais arquivos citam essa versão. Repita apenas o resumo que ele devolver, sem comentar.\" < /dev/null > resposta.md\ngrep -c \"^CONFIANÇA\" resposta.md; wc -l < resposta.md"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Salida capturada (19/10/2026)",
+            "html": "<pre>## conferidor (sem cota)\nexecutor · tools: Read, Write, Edit, Bash, Grep, Glob · model: sonnet · escreve: sim\nexplorador · tools: Read, Grep, Glob · model: inherit · escreve: não\nplanejador · tools: Read, Grep, Glob · model: opus · escreve: não\nrevisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim\n\n## resposta.md (chamada real, 29 s)\nA versão é 0.3.0 e a fonte da verdade é o arquivo VERSION na raiz. Não existe package.json nem pyproject, e nenhuma constante no código define a versão. Ela também aparece em mais 6 arquivos, num total de 9 ocorrências:\n\n- `VERSION:1`: `0.3.0` (definição)\n- `CHANGELOG.md:3`: `## 0.3.0 — 2026-10-05`\n- `runtime/mods/runtime-guarda/.claude-plugin/plugin.json:3`: `\"version\": \"0.3.0\"`\n- `runtime/mods/runtime-painel/.claude-plugin/plugin.json:3`: `\"version\": \"0.3.0\"`\n- `guia/index.html:329` e `:335`: rótulo \"Fase 3 · 0.3.0\" e rodapé \"INEMA Agent Runtime 0.3.0\"\n(… guia/en e guia/es, as mesmas duas citações …)\n\nCONFIANÇA alta. Não conferi o que o .gitignore exclui nem os outros números de versão (0.1.0, 0.2.0), e não verifiquei se algum script lê o VERSION.</pre><p>Los títulos con ## separan las dos rondas. Cortes declarados: dos líneas de la guía traducida y una línea final que el CLAUDE.md global de la máquina de la captura añade. En tu máquina, <code>wc -l</code> debe quedar entre 10 y 15.</p>"
+          },
+          {
+            "rot": "Trampa: el revisor del kit escribe",
+            "html": "<p>El conferidor marcó <code>revisor · … · escreve: sim</code>. El archivo del kit dice \"Não altere arquivos\", pero la lista de herramientas incluye <code>Bash</code>, y Bash graba. La instrucción es un pedido al modelo; la lista de herramientas es el seguro.</p><pre>revisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim</pre><p>El revisor necesita Bash para ejecutar los criterios. Para que no grabe de verdad, la salida es sandbox (clase 5) o una regla de permiso; la protección contra borrar y escribir es tema del <a href=\"https://inematds.github.io/loop-r-eng-seguranca-v72/\">curso 4</a>. Y la llamada real sin <code>&lt; /dev/null</code> espera 3 s por el stdin y avisa: <code>Warning: no stdin data received in 3s</code>.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Práctica",
+      "sub": "El ensayo revisa el archivo; la llamada real revisa el retorno.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E3 · Explorador de solo lectura",
+          "min": "10 min",
+          "texto": "Crea .claude/agents/explorador.md en el proyecto de entrenamiento y ejecuta el conferidor.",
+          "pronto": "el conferidor imprime <code>explorador · tools: Read, Grep, Glob · model: inherit · escreve: não</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E4 · Retorno que cabe",
+          "min": "10 min",
+          "texto": "Haz la llamada real. Después cambia la pregunta por una de tu proyecto de verdad, con el mismo subagente.",
+          "pronto": "<code>grep -c \"^CONFIANÇA\" resposta.md</code> → <code>1</code> y <code>wc -l &lt; resposta.md</code> → como máximo <code>15</code>, en las dos preguntas."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Prueba de la clase",
+      "perguntas": [
+        {
+          "p": "¿Qué vuelve del subagente a la conversación principal?",
+          "opcoes": [
+            "Todo su historial",
+            "Solo la respuesta final",
+            "Los archivos que leyó",
+            "Nada, él graba en disco"
+          ],
+          "certa": 1,
+          "explica": "Solo vuelve la respuesta final. Por eso el formato del retorno, escrito en el cuerpo del archivo, es la parte más importante.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "¿El subagente recibe el historial de la conversación principal?",
+          "opcoes": [
+            "Sí, siempre",
+            "No: recibe su propio prompt, el mensaje de tarea, el CLAUDE.md y el git status; quien hereda la conversación es el fork",
+            "Solo los últimos 10 mensajes",
+            "Solo si tiene model: inherit"
+          ],
+          "certa": 1,
+          "explica": "El subagente común empieza limpio. El fork hereda toda la conversación y, con eso, pierde el aislamiento de entrada.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "Un revisor tiene tools: Read, Bash, Grep, Glob y la instrucción \"não altere arquivos\". ¿Puede grabar?",
+          "opcoes": [
+            "No, la instrucción lo impide",
+            "Sí: Bash graba; la instrucción es un pedido, la lista de herramientas es el seguro",
+            "No, porque no tiene Write",
+            "Solo si es opus"
+          ],
+          "certa": 1,
+          "explica": "Con Bash puede escribir con echo, sed o rm. Para bloquearlo de verdad: sandbox (lección 5) o regla de permiso (curso 4).",
+          "ref": "codigo"
+        },
+        {
+          "p": "¿Cuándo NO conviene delegar a un subagente?",
+          "opcoes": [
+            "Búsqueda que genera mucho log",
+            "Tarea con mucho ida y vuelta y fases que comparten el mismo contexto",
+            "Restringir herramientas",
+            "Trabajo autocontenido que cabe en un resumen"
+          ],
+          "certa": 1,
+          "explica": "El ida y vuelta y el contexto compartido se quedan en la conversación principal; el subagente empieza de cero y tendría que releer todo.",
+          "ref": "diagrama"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "En tres frases",
+      "itens": [
+        {
+          "t": "Vale por lo que no vuelve",
+          "texto": "Los logs, las búsquedas y los archivos se quedan en la ventana del subagente; solo vuelve el resumen."
+        },
+        {
+          "t": "La herramienta es el candado",
+          "texto": "Read, Grep, Glob no escribe; Bash escribe, diga lo que diga la instrucción."
+        },
+        {
+          "t": "Formato fijo",
+          "texto": "Máximo de líneas, ruta:línea como prueba y línea de confianza, escritos en el cuerpo del archivo."
+        }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir más allá",
+      "links": [
+        {
+          "t": "Claude Code: Create custom subagents (doc oficial)",
+          "href": "https://code.claude.com/docs/en/sub-agents",
+          "icone": "arquivo"
+        },
+        {
+          "t": "Anthropic: Effective context engineering for AI agents (29/09/2025)",
+          "href": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+          "icone": "lupa"
+        },
+        {
+          "t": "El time de tres papeles del kit (.claude/agents)",
+          "href": "https://github.com/inematds/inema-agent-runtime/tree/main/.claude/agents",
+          "icone": "robo"
+        },
+        {
+          "t": "Curso 2 de la formación: el costo de contexto en una sesión larga",
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
+          "icone": "seta"
+        }
+      ]
+    }
+  ]
+}
