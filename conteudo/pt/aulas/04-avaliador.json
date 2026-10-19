@@ -1,0 +1,227 @@
+{
+  "slug": "avaliador",
+  "num": 4,
+  "menu": "Avaliador",
+  "titulo": "Gerador × avaliador",
+  "titulo_curto": "Gerador × avaliador",
+  "minutos": 18,
+  "lead": "O multiagente mais útil tem dois papéis: um faz, outro confere. O gerador sempre diz \"pronto\"; quem decide é um avaliador separado que olha só o artefato e devolve um parecer. Nesta aula você liga os dois num laço com teto de rodadas, primeiro com um gerador falso que mente e depois com o Claude de verdade.",
+  "objetivo": "ligar um gerador a um avaliador separado que só olha o artefato e devolve parecer, com teto de rodadas.",
+  "competencias": [
+    "separar-gerador-e-avaliador",
+    "devolver-parecer-ao-gerador",
+    "limitar-rodadas"
+  ],
+  "aprende": [
+    { "icone": "robo", "t": "Por que o avaliador é outro processo, não outro parágrafo do prompt" },
+    { "icone": "check", "t": "O verificar.mjs do kit como avaliador por código" },
+    { "icone": "chat", "t": "O parecer que volta ao gerador e o teto de rodadas" },
+    { "icone": "camadas", "t": "O time de três papéis numa sessão" }
+  ],
+  "hero_alt": "Impressora 3D com uma peça recém-impressa e, em frente, uma bancada de medição conferindo uma peça igual.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "O laço gerador × avaliador",
+      "sub": "O gerador nunca dá a própria nota. Clique em cada etapa.",
+      "nos": [
+        {
+          "icone": "alvo",
+          "titulo": "Pedido + critérios",
+          "sub": "goal.md",
+          "detalhe": "Os critérios ficam num arquivo que o gerador não edita, no formato do kit: - [ ] `comando` → `texto esperado`. Como escrever critérios que não se cumprem por atalho é o curso 1 (Verificação)."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Gerador",
+          "sub": "faz e diz \"pronto\"",
+          "detalhe": "Recebe o pedido e, a partir da 2ª rodada, o parecer do avaliador. O que ele diz no fim (\"Pronto! criado conforme pedido\") é registrado, mas não decide nada."
+        },
+        {
+          "icone": "arquivo",
+          "titulo": "Artefato",
+          "sub": "o que ficou em disco",
+          "detalhe": "O avaliador olha o arquivo, o diff, a saída do teste. Não lê o relato do gerador. Regra do kit agente-claude-codex: entregue ao segundo agente o artefato real, nunca um reconto do que o primeiro fez."
+        },
+        {
+          "icone": "lupa",
+          "titulo": "Avaliador",
+          "sub": "outro processo",
+          "forte": true,
+          "itens": [
+            { "icone": "check", "t": "por código: verificar.mjs" },
+            { "icone": "robo", "t": "por modelo: revisor (sem editar)" }
+          ],
+          "detalhe": "Por código, quando dá: roda cada critério e só aprova se a saída bate. Por modelo, quando o critério é de julgamento: um revisor que não edita. A Anthropic relata (24/03/2026) que o agente que avalia o próprio trabalho tende a aprovar trabalho medíocre; separar foi a correção."
+        },
+        {
+          "icone": "portao",
+          "titulo": "Decisão",
+          "sub": "aprovado / parecer / para",
+          "detalhe": "Aprovado: sai com 0. Reprovado: o trecho do parecer volta para o gerador. Gerador caiu: rodada reprovada, sem avaliar sobra de rodada anterior. MAX rodadas sem aprovação: PARADO, saída 2."
+        }
+      ],
+      "volta": "Reprovado? O parecer volta ao gerador, até MAX rodadas",
+      "legenda": "Concordância entre dois modelos não é prova independente: eles podem dividir a mesma suposição errada. Critério por código vem primeiro."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "O laço em 25 linhas",
+      "sub": "O avaliador é o verificar.mjs do projeto de treino; o gerador é qualquer comando que lê o pedido no stdin.",
+      "blocos": [
+        {
+          "rot": "gera-avalia.sh · salve em ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "#!/usr/bin/env bash\n# gera-avalia.sh — o gerador faz; o avaliador (outro processo, só o artefato) confere; até MAX rodadas.\n# Uso: gera-avalia.sh <goal.md> \"<pedido>\"\n#   GERADOR = comando que lê pedido + parecer no stdin (padrão: claude -p --permission-mode acceptEdits)\n#   o avaliador é o verificar.mjs do kit: roda cada critério `comando` → `saída esperada`\nset -u\nGOAL=\"${1:?uso: gera-avalia.sh <goal.md> \\\"<pedido>\\\"}\"; PEDIDO=\"${2:?pedido}\"\nGERADOR=\"${GERADOR:-claude -p --permission-mode acceptEdits}\"; MAX=\"${MAX:-3}\"; parecer=\"\"\nmkdir -p .gera-avalia\nfor r in $(seq 1 \"$MAX\"); do\n  printf '%s\\n%s\\n' \"$PEDIDO\" \"$parecer\" | timeout 600 $GERADOR > .gera-avalia/gerador-$r.log 2>&1\n  rc=$?\n  if [ $rc -ne 0 ]; then   # gerador caiu ou estourou o teto: não avalia sobra de rodada anterior\n    echo \"rodada $r · gerador falhou (rc=$rc) → REPROVADO\"; parecer=\"A rodada anterior falhou (rc=$rc).\"; continue\n  fi\n  echo \"rodada $r · gerador diz: $(tail -1 .gera-avalia/gerador-$r.log)\"\n  if node runtime/scripts/verificar.mjs \"$GOAL\" > .gera-avalia/avaliador-$r.log 2>&1; then\n    echo \"rodada $r · avaliador: $(tail -1 .gera-avalia/avaliador-$r.log) → APROVADO\"; exit 0\n  fi\n  echo \"rodada $r · avaliador: $(tail -1 .gera-avalia/avaliador-$r.log) → REPROVADO\"\n  parecer=\"O avaliador reprovou. Trecho do parecer: $(grep -A2 '^FALHA' .gera-avalia/avaliador-$r.log)\"\ndone\necho \"PARADO: $MAX rodadas sem aprovação\"; exit 2"
+        },
+        {
+          "rot": "goal-saudacao.md · os critérios (o gerador não edita)",
+          "icone": "alvo",
+          "conteudo": "# Goal — saudação\n\n## Critérios de pronto\n- [ ] `cat saudacao.txt` → `Olá, comunidade INEMA`\n- [ ] `wc -l < saudacao.txt` → `1`"
+        },
+        {
+          "rot": "Terminal · ensaio sem cota (gerador falso que erra e depois corrige)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x gera-avalia.sh && rm -f saudacao.txt\nE=${TMPDIR:-/tmp}/ensaio-multi/gera; rm -rf $E && mkdir -p $E\ncat > $E/gerador-falso.sh <<'SH'\n#!/usr/bin/env bash\nentrada=$(cat)\ncase \"$entrada\" in\n  *reprovou*) echo \"Olá, comunidade INEMA\" > saudacao.txt ;;   # 2ª vez: leu o parecer\n  *) printf 'Olá comunidade INEMA\\n\\n' > saudacao.txt ;;      # 1ª vez: vírgula e linha a mais\nesac\necho \"Pronto! saudacao.txt criado conforme pedido.\"\nSH\nchmod +x $E/gerador-falso.sh\nGERADOR=$E/gerador-falso.sh ./gera-avalia.sh goal-saudacao.md \"Crie saudacao.txt com uma linha: Olá, comunidade INEMA\"\necho \"saída: $?\""
+        },
+        {
+          "rot": "Terminal · real, com o Claude como gerador",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi && rm -f saudacao.txt\n./gera-avalia.sh goal-saudacao.md \"Crie saudacao.txt com uma linha: Olá, comunidade INEMA\" < /dev/null\necho \"saída: $?\"; cat saudacao.txt"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>## ensaio (gerador falso)\nrodada 1 · gerador diz: Pronto! saudacao.txt criado conforme pedido.\nrodada 1 · avaliador: 0/2 critérios OK → REPROVADO\nrodada 2 · gerador diz: Pronto! saudacao.txt criado conforme pedido.\nrodada 2 · avaliador: 2/2 critérios OK → APROVADO\nsaída: 0\n\n## real (Claude como gerador)\nrodada 1 · gerador diz: Terminei: criei o `saudacao.txt`. Conferi o arquivo e ele tem uma linha só: `Olá, comunidade INEMA`. Não fiz commit.\nrodada 1 · avaliador: 2/2 critérios OK → APROVADO\nsaída: 0\nOlá, comunidade INEMA</pre><p>Na rodada 1 do ensaio o gerador disse \"pronto\" com a vírgula faltando e uma linha a mais; o avaliador reprovou os dois critérios. Os títulos com ## separam as duas execuções.</p>"
+          },
+          {
+            "rot": "Gerador teimoso: o teto para",
+            "html": "<p>Um gerador que ignora o parecer (sempre grava \"Olá comunidade\") nunca passa. O teto de rodadas encerra com código 2:</p><pre>rodada 1 · gerador diz: Pronto, terminei.\nrodada 1 · avaliador: 1/2 critérios OK → REPROVADO\nrodada 2 · gerador diz: Pronto, terminei.\nrodada 2 · avaliador: 1/2 critérios OK → REPROVADO\nrodada 3 · gerador diz: Pronto, terminei.\nrodada 3 · avaliador: 1/2 critérios OK → REPROVADO\nPARADO: 3 rodadas sem aprovação\nsaída: 2</pre><p>Três rodadas sem avanço é a mesma regra de parada do curso 2: chame o humano.</p>"
+          },
+          {
+            "rot": "Gerador caiu, sobra aprovada",
+            "html": "<p>Com o <code>saudacao.txt</code> certo de uma rodada anterior ainda em disco e um gerador que sai com erro, a primeira versão do script aprovaria a sobra. A versão acima reprova a rodada sem avaliar:</p><pre>rodada 1 · gerador falhou (rc=1) → REPROVADO\nrodada 2 · gerador falhou (rc=1) → REPROVADO\nPARADO: 2 rodadas sem aprovação\nsaída: 2\nsaudacao.txt</pre><p>Esse defeito foi achado pela revisão do Codex na aula 7, rodada sobre este mesmo script.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Dentro da sessão: o time de três papéis",
+      "sub": "A receita R2 do projeto de treino faz o mesmo laço com subagentes.",
+      "passos": [
+        {
+          "titulo": "planejador",
+          "sub": "só lê",
+          "texto": [
+            "Devolve até 5 passos e os critérios no formato comando → saída esperada, mais os riscos que pedem confirmação.",
+            "No kit, roda num nível topo; ferramentas Read, Grep, Glob."
+          ]
+        },
+        {
+          "titulo": "executor",
+          "sub": "faz e mostra a prova",
+          "texto": [
+            "Segue o plano um passo por vez e mostra a saída real de cada comando de prova. Pode editar.",
+            "No kit, nível executor; é o único papel com Write e Edit."
+          ]
+        },
+        {
+          "titulo": "revisor",
+          "sub": "roda os critérios",
+          "texto": [
+            "Roda cada critério, compara com a saída real e termina em APROVADO ou FALTA: com a lista.",
+            "No kit, nível menor. Tem Bash para rodar os critérios, e por isso consegue gravar (aula 2)."
+          ]
+        },
+        {
+          "titulo": "Como pedir",
+          "sub": "receita R2",
+          "texto": [
+            "Numa sessão aberta em ~/treino-multi: \"Use o time: o planejador planeja, o executor faz e o revisor confere. Tarefa: [sua tarefa]\".",
+            "A prova da receita: a resposta termina com APROVADO e o arquivo pedido existe."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática",
+      "sub": "O ensaio prova o laço; a rodada real prova que ele funciona com um modelo.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E7 · O laço com gerador falso",
+          "min": "10 min",
+          "texto": "Salve gera-avalia.sh e goal-saudacao.md e rode o ensaio. Depois troque o gerador falso por um que nunca corrige.",
+          "pronto": "o ensaio termina em <code>rodada 2 · avaliador: 2/2 critérios OK → APROVADO</code> e <code>saída: 0</code>; o teimoso termina em <code>PARADO: 3 rodadas sem aprovação</code> e <code>saída: 2</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E8 · O laço com o Claude",
+          "min": "10 min",
+          "texto": "Antes, faça commit do goal (<code>git add goal-saudacao.md &amp;&amp; git commit -qm goal</code>), para o git acusar se ele mudar. Rode a versão real. Depois escreva um goal seu, com 2 ou 3 critérios, para uma tarefa pequena do seu projeto, e rode de novo.",
+          "pronto": "as duas rodadas terminam com <code>→ APROVADO</code> e <code>saída: 0</code> em até 3 rodadas, e <code>git diff --exit-code -- goal-saudacao.md</code> → código 0 (o gerador não mexeu nos critérios)."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "O gerador escreveu \"Pronto! criado conforme pedido\". O que isso decide?",
+          "opcoes": ["Que acabou", "Nada: quem decide é o avaliador, olhando o artefato", "Que a rodada foi boa", "Que pode pular o avaliador"],
+          "certa": 1,
+          "explica": "No ensaio, a frase veio junto com um arquivo errado. O relato fica no log; a decisão é do verificar.mjs.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "O que o avaliador deve receber?",
+          "opcoes": ["O resumo do gerador", "O artefato real: arquivo, diff ou saída de teste, mais os critérios", "A conversa inteira", "Só o pedido"],
+          "certa": 1,
+          "explica": "Reconto vago esconde o defeito. A regra do kit agente-claude-codex é dar ao segundo agente o mesmo briefing e o artefato.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "O gerador saiu com erro, mas um saudacao.txt certo de antes estava em disco. O que o script deve fazer?",
+          "opcoes": ["Avaliar e aprovar", "Reprovar a rodada sem avaliar", "Apagar o goal", "Parar com 0"],
+          "certa": 1,
+          "explica": "Avaliar a sobra aprovaria trabalho que esta rodada não fez. Foi o defeito apontado pelo Codex e corrigido no script.",
+          "ref": "codigo"
+        },
+        {
+          "p": "Dois modelos diferentes concordaram que o trabalho está certo. Isso prova?",
+          "opcoes": ["Sim, dois votos bastam", "Não: podem dividir a mesma suposição errada; critério por código vem primeiro", "Sim, se forem de empresas diferentes", "Só se for o modelo topo"],
+          "certa": 1,
+          "explica": "Concordância ajuda, mas não é prova independente. O critério que roda e imprime a saída esperada é a prova.",
+          "ref": "diagrama"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Dois papéis", "texto": "Um faz, outro confere, em processos separados; o gerador nunca dá a própria nota." },
+        { "t": "Artefato e parecer", "texto": "O avaliador lê o que ficou em disco e devolve o trecho que falhou ao gerador." },
+        { "t": "Teto e falha", "texto": "MAX rodadas e para com 2; rodada com gerador caído é reprovada sem avaliar." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir além",
+      "links": [
+        { "t": "Curso 1 da formação: Verificação e evals (como escrever o avaliador)", "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/", "icone": "check" },
+        { "t": "Receita R2: time de três papéis", "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/receitas/R2-time-tres-papeis.md", "icone": "robo" },
+        { "t": "verificar.mjs (26 linhas, leia inteiro)", "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/scripts/verificar.mjs", "icone": "terminal" },
+        { "t": "Anthropic: harness design para apps de longa duração (24/03/2026)", "href": "https://anthropic.com/engineering/harness-design-long-running-apps", "icone": "lupa" }
+      ]
+    }
+  ]
+}

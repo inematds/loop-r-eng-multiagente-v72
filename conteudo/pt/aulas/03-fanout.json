@@ -1,0 +1,229 @@
+{
+  "slug": "fanout",
+  "num": 3,
+  "menu": "Fan-out",
+  "titulo": "Orquestrador-trabalhadores e fan-out",
+  "titulo_curto": "Fan-out",
+  "minutos": 20,
+  "lead": "Fan-out é um orquestrador soltando N trabalhadores sobre itens independentes e juntando só o que importa. Funciona quando cada item cabe num pedido claro, tem teto e devolve uma linha conferível. Nesta aula você roda um fan-out em shell com agente falso, vê o tempo cair e refaz só o item reprovado.",
+  "objetivo": "rodar um fan-out com N trabalhadores, teto por item e consolidação curta, refazendo só o item reprovado.",
+  "competencias": [
+    "orquestrar-trabalhadores",
+    "escrever-pedido-de-delegacao",
+    "consolidar-resultados",
+    "reprocessar-so-reprovados"
+  ],
+  "aprende": [
+    { "icone": "camadas", "t": "As formas de fan-out no Claude Code e no shell" },
+    { "icone": "caneta", "t": "O pedido de delegação: objetivo, formato, fontes e fronteiras" },
+    { "icone": "relogio", "t": "Teto por trabalhador e retorno em arquivo" },
+    { "icone": "check", "t": "Consolidar pela última linha e refazer só o reprovado" }
+  ],
+  "hero_alt": "Cabo grosso que se divide em cinco cabos finos ligados a cinco módulos iguais com LED verde.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Um fan-out com controle",
+      "sub": "O orquestrador planeja e junta; os trabalhadores só fazem a sua parte. Clique em cada etapa.",
+      "nos": [
+        {
+          "icone": "cerebro",
+          "titulo": "Orquestrador",
+          "sub": "divide e descreve",
+          "detalhe": "No sistema de pesquisa da Anthropic, o líder decompõe a pergunta e descreve cada subtarefa. Pedido vago (\"pesquise a falta de chips\") fez três subagentes repetirem a mesma busca. A regra escrita no prompt deles: fato simples, 1 agente com 3 a 10 chamadas; comparação, 2 a 4 subagentes; pesquisa complexa, mais de 10."
+        },
+        {
+          "icone": "lista",
+          "titulo": "Lista",
+          "sub": "itens congelados",
+          "detalhe": "Um item por linha, com a entrada já pronta. Se um item depende do resultado de outro, ele não entra no fan-out: vai depois (híbrido, aula 1)."
+        },
+        {
+          "icone": "fila",
+          "titulo": "N trabalhadores",
+          "sub": "xargs -P / Agent",
+          "forte": true,
+          "itens": [
+            { "icone": "relogio", "t": "timeout por item" },
+            { "icone": "arquivo", "t": "resultado em arquivo" }
+          ],
+          "detalhe": "Cada trabalhador recebe só o seu item, roda com teto (timeout) e grava o resultado num arquivo. No Claude Code, a mesma ideia é pedir vários subagentes numa mensagem; o limite é de 20 rodando ao mesmo tempo."
+        },
+        {
+          "icone": "check",
+          "titulo": "Consolidar",
+          "sub": "só a última linha",
+          "detalhe": "O orquestrador lê a última linha de cada arquivo (OK ou FALHA: motivo), não o texto inteiro. A Anthropic chama isso de evitar o telefone sem fio: o trabalhador grava o artefato e passa uma referência leve."
+        }
+      ],
+      "volta": "Reprovado? Volta só ele para a lista; os aprovados não são refeitos",
+      "legenda": "Fan-out de 500 arquivos mecânicos não pede modelo nenhum: é script. Agente entra quando cada item exige julgamento."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "As formas de fan-out hoje",
+      "sub": "Pela doc do Claude Code (Run agents in parallel, lida em 19/10/2026) e pelo Codex CLI 0.163.0.",
+      "passos": [
+        {
+          "titulo": "Subagentes",
+          "sub": "numa sessão",
+          "texto": [
+            "Peça vários subagentes na mesma mensagem. Os resultados voltam para a conversa que os criou.",
+            "Para um lote grande e repetível, a doc aponta dynamic workflows (um script que roda muitos subagentes e confronta resultados) e o /batch, que divide uma mudança grande em 5 a 30 subagentes, cada um no seu worktree."
+          ]
+        },
+        {
+          "titulo": "Sessões",
+          "sub": "agent view",
+          "texto": [
+            "claude --bg solta uma sessão em segundo plano; claude agents mostra todas numa tela. Antes de editar, a sessão de fundo entra num worktree próprio em .claude/worktrees/.",
+            "Cada sessão gasta a sua cota. Junte os resultados por arquivo, numa sessão chefe ou num script."
+          ]
+        },
+        {
+          "titulo": "Agent teams",
+          "sub": "experimental",
+          "texto": [
+            "Desligado por padrão (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1). Um líder e colegas com lista de tarefas e mensagens entre si. Um time por sessão, sem time aninhado, e /resume não restaura colegas em processo.",
+            "Colegas não ganham worktree: dois editando o mesmo arquivo sobrescrevem. Divida os arquivos por dono."
+          ]
+        },
+        {
+          "titulo": "Shell",
+          "sub": "claude -p / codex exec",
+          "texto": [
+            "Fora da sessão, um xargs -P com claude -p ou codex exec por item. É o que você controla melhor: teto, arquivo de saída, retomada.",
+            "É a forma do ensaio abaixo, porque dá para trocar o agente por um script falso."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Fan-out em shell, com ensaio",
+      "sub": "O AGENTE é qualquer comando que lê o pedido no stdin. Para o ensaio, um script que dorme 2 s e responde.",
+      "blocos": [
+        {
+          "rot": "fanout.sh · salve em ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "#!/usr/bin/env bash\n# fanout.sh — um trabalhador por linha da lista, N ao mesmo tempo, retorno curto em arquivo.\n# Uso: fanout.sh <lista.txt> <pasta-saida> [N]\n#   AGENTE = comando que lê o pedido no stdin (padrão: claude -p). Para ensaio: um script falso.\n#   TETO   = segundos por trabalhador (padrão 600)\nset -u\nLISTA=\"${1:?uso: fanout.sh <lista.txt> <pasta-saida> [N]}\"; OUT=\"${2:?pasta de saída}\"; N=\"${3:-3}\"\nexport OUT AGENTE=\"${AGENTE:-claude -p}\" TETO=\"${TETO:-600}\"\nmkdir -p \"$OUT\"\n\ntrabalho() {\n  item=\"$1\"; nome=$(printf '%s' \"$item\" | tr -cs 'a-zA-Z0-9' '-' | cut -c1-40)\n  if [ -s \"$OUT/$nome.md\" ] && [ \"$(tail -1 \"$OUT/$nome.md\")\" = OK ]; then\n    echo \"pula $nome (aprovado)\"; return 0     # só o reprovado volta\n  fi\n  printf 'Tarefa: %s\\nResponda em no máximo 5 linhas. Última linha: OK, ou FALHA: <motivo>.\\n' \"$item\" \\\n    | timeout \"$TETO\" $AGENTE > \"$OUT/$nome.tmp\" 2>&1\n  rc=$?\n  if [ $rc -eq 0 ]; then mv \"$OUT/$nome.tmp\" \"$OUT/$nome.md\"; echo \"feito $nome\"\n  else mv \"$OUT/$nome.tmp\" \"$OUT/$nome.erro\"; echo \"erro $nome (rc=$rc)\"; fi\n}\nexport -f trabalho\n\ngrep -v '^[[:space:]]*$' \"$LISTA\" | xargs -d '\\n' -P \"$N\" -I{} bash -c 'trabalho \"$1\"' _ {}\n\n# o orquestrador junta só as últimas linhas: é isso que volta para o contexto dele\nfor f in \"$OUT\"/*.md; do [ -e \"$f\" ] && printf '%s: %s\\n' \"$(basename \"$f\" .md)\" \"$(tail -1 \"$f\")\"; done > \"$OUT/../consolidado.txt\"\necho \"itens: $(grep -cv '^[[:space:]]*$' \"$LISTA\") · feitos: $(ls \"$OUT\"/*.md 2>/dev/null | wc -l) · com erro: $(ls \"$OUT\"/*.erro 2>/dev/null | wc -l) · OK: $(grep -c ': OK$' \"$OUT/../consolidado.txt\") · FALHA: $(grep -c ': FALHA' \"$OUT/../consolidado.txt\")\""
+        },
+        {
+          "rot": "Terminal · ensaio sem cota (agente falso)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x fanout.sh\nE=${TMPDIR:-/tmp}/ensaio-multi/fanout; rm -rf $E && mkdir -p $E\ncat > $E/agente-falso.sh <<'SH'\n#!/usr/bin/env bash\npedido=$(cat); sleep 2\ncase \"$pedido\" in\n  *quebrado*) printf 'não consegui ler o arquivo\\nFALHA: arquivo quebrado\\n' ;;\n  *) printf 'resumo de uma linha\\nOK\\n' ;;\nesac\nSH\nchmod +x $E/agente-falso.sh\nprintf 'resumir docs/a.md\\nresumir docs/b.md\\nresumir docs/quebrado.md\\nresumir docs/c.md\\nresumir docs/d.md\\n' > $E/lista.txt\n\ntime AGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 1   # um por vez\nrm -rf $E/saida\ntime AGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 3   # três ao mesmo tempo\nAGENTE=$E/agente-falso.sh ./fanout.sh $E/lista.txt $E/saida 3        # de novo: não refaz\ncat $E/consolidado.txt"
+        },
+        {
+          "rot": "Terminal · real, com 2 ou 3 itens do seu projeto",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\nprintf 'Resuma runtime/POLITICA.md em 3 linhas\\nResuma runtime/ROTEAMENTO.md em 3 linhas\\n' > lista-real.txt\n./fanout.sh lista-real.txt real/saida 2 < /dev/null\ncat real/consolidado.txt"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>feito resumir-docs-a-md\nfeito resumir-docs-b-md\nfeito resumir-docs-quebrado-md\nfeito resumir-docs-c-md\nfeito resumir-docs-d-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\n\nreal\t0m10.094s\n(…)\nfeito resumir-docs-a-md\nfeito resumir-docs-b-md\nfeito resumir-docs-quebrado-md\nfeito resumir-docs-d-md\nfeito resumir-docs-c-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\n\nreal\t0m4.054s\n(…)\npula resumir-docs-b-md (aprovado)\npula resumir-docs-a-md (aprovado)\npula resumir-docs-c-md (aprovado)\npula resumir-docs-d-md (aprovado)\nfeito resumir-docs-quebrado-md\nitens: 5 · feitos: 5 · com erro: 0 · OK: 4 · FALHA: 1\nresumir-docs-a-md: OK\nresumir-docs-b-md: OK\nresumir-docs-c-md: OK\nresumir-docs-d-md: OK\nresumir-docs-quebrado-md: FALHA: arquivo quebrado</pre><p>Cortes: as linhas <code>user</code>/<code>sys</code> do time. O tempo caiu de 10 s para 4 s porque o agente falso só dorme: é a forma do ganho, não a medida de um agente de verdade. Na terceira rodada, só o reprovado rodou de novo.</p>"
+          },
+          {
+            "rot": "Rodada real (19/10/2026)",
+            "html": "<pre>feito Resuma-runtime-ROTEAMENTO-md-em-3-linhas\nfeito Resuma-runtime-POLITICA-md-em-3-linhas\nitens: 2 · feitos: 2 · com erro: 0 · OK: 2 · FALHA: 0\n(…)\nResuma-runtime-POLITICA-md-em-3-linhas: OK\nResuma-runtime-ROTEAMENTO-md-em-3-linhas: OK</pre><p>Dois <code>claude -p</code> em paralelo, 48 s no total, no projeto de treino. O texto de cada resumo ficou em <code>real/saida/</code>; ao orquestrador chegaram duas linhas.</p>"
+          },
+          {
+            "rot": "Erro comum: teto curto demais",
+            "html": "<p>Com <code>TETO=1</code>, nenhum trabalhador termina: o <code>timeout</code> corta todos com código 124 e o resultado vai para <code>.erro</code>, não para <code>.md</code>.</p><pre>erro resumir-docs-a-md (rc=124)\nerro resumir-docs-quebrado-md (rc=124)\nerro resumir-docs-b-md (rc=124)\nerro resumir-docs-c-md (rc=124)\nerro resumir-docs-d-md (rc=124)\nitens: 5 · feitos: 0 · com erro: 5 · OK: 0 · FALHA: 0</pre><p>Teto é obrigatório, mas calibrado: rode um item real sozinho, meça e dê folga. Sem teto, um trabalhador travado segura o lote inteiro.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "O pedido de delegação",
+      "sub": "Quando o fan-out é dentro da sessão, o orquestrador é você pedindo. Os quatro campos vêm do post da Anthropic.",
+      "blocos": [
+        {
+          "rot": "Prompt · fan-out com subagentes numa sessão",
+          "icone": "chat",
+          "conteudo": "Divida em subagentes, um por item da lista abaixo, todos na mesma mensagem.\nPara cada subagente, escreva:\n- Objetivo: <o que este item precisa responder>\n- Formato de saída: no máximo 5 linhas; última linha OK ou FALHA: <motivo>; grave em saida/<item>.md\n- Fontes e ferramentas: <arquivos ou pastas que pode ler>; não edite nada fora de saida/\n- Fronteira: não trate dos outros itens; se depender de outro item, pare e diga qual\nDepois, leia só a última linha de cada arquivo e me dê a tabela item → OK/FALHA.\nItens:\n<item 1>\n<item 2>\n<item 3>"
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática",
+      "sub": "Ensaio primeiro; depois dois itens reais.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E5 · Fan-out com agente falso",
+          "min": "10 min",
+          "texto": "Salve o fanout.sh e rode o ensaio inteiro.",
+          "pronto": "a rodada com N=1 leva cerca de 10 s e a com N=3 cerca de 4 s; as duas imprimem <code>OK: 4 · FALHA: 1</code>; a terceira imprime quatro linhas <code>pula … (aprovado)</code> e uma <code>feito resumir-docs-quebrado-md</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E6 · Dois itens reais",
+          "min": "10 min",
+          "texto": "Rode o bloco real (ele usa claude -p, pela sua assinatura). Se um item sair FALHA, leia só o arquivo dele e rode o fanout.sh de novo.",
+          "pronto": "<code>cat real/consolidado.txt</code> mostra 2 linhas, cada uma terminando em <code>OK</code> ou <code>FALHA: …</code>, e <code>ls real/saida/*.erro</code> não acha nada."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "Por que o orquestrador lê só a última linha de cada resultado?",
+          "opcoes": ["Para economizar disco", "Para não trazer o trabalho inteiro de volta ao próprio contexto: o artefato fica no arquivo e volta uma referência leve", "Porque o resto é sempre lixo", "Porque o xargs corta"],
+          "certa": 1,
+          "explica": "É o mesmo princípio do subagente: o detalhe fica fora. Quando precisa, o orquestrador abre só o arquivo do item reprovado.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "O que faltava no pedido que fez três subagentes da Anthropic repetirem a mesma busca?",
+          "opcoes": ["Um modelo maior", "Objetivo, formato de saída, fontes e fronteiras claras por subagente", "Mais subagentes", "Timeout"],
+          "certa": 1,
+          "explica": "Com pedido vago, cada subagente interpretou do seu jeito e o trabalho se repetiu. Os quatro campos dividem o trabalho.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "Na segunda rodada do fanout.sh, quem roda de novo?",
+          "opcoes": ["Todos", "Só os itens cuja última linha não é OK", "Nenhum", "Só os que deram timeout"],
+          "certa": 1,
+          "explica": "Aprovado não é reprocessado. FALHA e .erro voltam; é a regra \"só o reprovado volta\" do kit da aula 1.",
+          "ref": "codigo"
+        },
+        {
+          "p": "Dois colegas de um agent team precisam mexer no mesmo arquivo. O que a doc recomenda?",
+          "opcoes": ["Nada, o time resolve", "Dividir o trabalho para que cada colega seja dono de arquivos diferentes, porque o time não isola em worktree", "Ligar /batch", "Usar fork"],
+          "certa": 1,
+          "explica": "Agent teams não dão worktree a cada colega: editar o mesmo arquivo sobrescreve. Partição por dono, ou isolamento (aula 5).",
+          "ref": "passos"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Itens congelados", "texto": "Só entra no fan-out o que não depende de outro item; o resto vai antes ou depois." },
+        { "t": "Teto e arquivo", "texto": "Cada trabalhador com timeout, resultado gravado e última linha OK ou FALHA." },
+        { "t": "Só o reprovado volta", "texto": "O orquestrador lê as últimas linhas e reroda só o que falhou." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir além",
+      "links": [
+        { "t": "Claude Code: Run agents in parallel (comparação das formas)", "href": "https://code.claude.com/docs/en/agents", "icone": "camadas" },
+        { "t": "Claude Code: Agent teams (experimental, limites)", "href": "https://code.claude.com/docs/en/agent-teams", "icone": "robo" },
+        { "t": "Anthropic: How we built our multi-agent research system", "href": "https://www.anthropic.com/engineering/multi-agent-research-system", "icone": "lupa" },
+        { "t": "Curso 2 da formação: loop headless com flock e teto", "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/", "icone": "seta" }
+      ]
+    }
+  ]
+}

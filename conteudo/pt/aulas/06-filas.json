@@ -1,0 +1,256 @@
+{
+  "slug": "filas",
+  "num": 6,
+  "menu": "Filas",
+  "titulo": "Filas, retomada e colisão entre sessões",
+  "titulo_curto": "Filas e colisão",
+  "minutos": 20,
+  "lead": "Uma fila em pastas sobrevive a queda: o que estava rodando volta para a entrada. Mas a mesma retomada que salva uma cópia atropela a outra quando duas rodam na mesma pasta. Nesta aula você interrompe e retoma uma fila, provoca a colisão com números, trava com flock e vê a guarda de colisão perguntar antes de editar.",
+  "objetivo": "interromper e retomar uma fila, provocar a colisão de duas filas na mesma pasta e travar com flock e com a guarda de colisão.",
+  "competencias": [
+    "retomar-fila-interrompida",
+    "evitar-execucao-duplicada",
+    "detectar-colisao-entre-sessoes"
+  ],
+  "aprende": [
+    { "icone": "fila", "t": "Os estados entrada, rodando, feito e falhou" },
+    { "icone": "relogio", "t": "Retomada: pelo menos uma vez, nunca exatamente uma" },
+    { "icone": "x", "t": "Duas cópias na mesma pasta: cada tarefa roda duas vezes" },
+    { "icone": "cadeado", "t": "flock e a guarda de colisão do runtime" }
+  ],
+  "hero_alt": "Bandejas de metal numa prateleira escura: entrada com pastas, uma do meio com uma pasta sob trava e uma de saída.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "O caminho de uma tarefa na fila",
+      "sub": "A fila caseira do jornada-agentes, em pastas. Clique em cada estado.",
+      "nos": [
+        {
+          "icone": "pasta",
+          "titulo": "entrada/",
+          "sub": "esperando a vez",
+          "detalhe": "Cada arquivo .md é um pedido. Rodar a fila de novo só pega o que sobrou aqui."
+        },
+        {
+          "icone": "robo",
+          "titulo": "rodando/",
+          "sub": "uma por vez",
+          "forte": true,
+          "detalhe": "A fila move o arquivo para rodando/ e chama o agente. Se o processo cai (Ctrl+C, queda), o arquivo fica aqui; na próxima rodada, a retomada devolve tudo de rodando/ para entrada/. Por isso a tarefa interrompida roda de novo: é \"pelo menos uma vez\"."
+        },
+        {
+          "icone": "check",
+          "titulo": "feito/ ou falhou/",
+          "sub": "pedido + resposta",
+          "detalhe": "Saída 0 e resposta não vazia: feito/, com o pedido e a resposta. Senão: falhou/, com o código e a mensagem. Nada é apagado sem deixar rastro."
+        },
+        {
+          "icone": "cadeado",
+          "titulo": "Trava",
+          "sub": "uma fila por pasta",
+          "detalhe": "A retomada assume que só há UMA fila rodando. Com duas, a segunda devolve para a entrada o que a primeira está rodando, e as duas executam as mesmas tarefas. flock -n na pasta resolve: a segunda cópia sai na hora."
+        }
+      ],
+      "volta": "Caiu? Na próxima rodada, rodando/ volta para entrada/",
+      "legenda": "A fila durável de verdade, com banco, tentativas e portões, é o inemaccbot do curso de Filas. Aqui a ideia mínima, para ver a falha."
+    },
+    {
+      "tipo": "simfila",
+      "titulo": "Interrompa e retome",
+      "sub": "Rode, mate o processo no meio e rode de novo. Uma tarefa falha na primeira execução.",
+      "tarefas": [
+        "01 · resumir a reunião de segunda",
+        "02 · listar 3 riscos do loop",
+        "03 · gerar o changelog da semana",
+        "04 · revisar o README"
+      ],
+      "falha": 2,
+      "rot": {
+        "entrada": "entrada/",
+        "rodando": "rodando/",
+        "feito": "feito/",
+        "falhou": "falhou/",
+        "rodar": "Rodar a fila",
+        "parar": "Matar o processo",
+        "zerar": "Recomeçar"
+      },
+      "msg": {
+        "inicio": "Quatro pedidos em entrada/. Clique em \"Rodar a fila\".",
+        "rodando": "Uma tarefa por vez: entrada/ → rodando/ → feito/ ou falhou/.",
+        "parou": "Processo morto. A tarefa em curso ficou em rodando/, sem resposta.",
+        "retoma": "Fila de novo: o que estava em rodando/ voltou para entrada/ e roda outra vez.",
+        "fim": "Fila vazia: todas em feito/.",
+        "fimfalha": "Fila vazia. Uma tarefa foi para falhou/ com o motivo; as outras, para feito/."
+      },
+      "legenda": "Simulação ilustrativa no navegador. O ensaio de verdade, com o script e um claude falso, está logo abaixo."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Ensaio: retomada, colisão e flock",
+      "sub": "Um claude FALSO no PATH anota cada execução num log. Contar linhas do log mostra quantas vezes cada tarefa rodou.",
+      "blocos": [
+        {
+          "rot": "Terminal · ensaio sem cota",
+          "icone": "terminal",
+          "conteudo": "cd ~/jornada-agentes                      # git clone https://github.com/inematds/jornada-agentes.git ~/jornada-agentes\nE=${TMPDIR:-/tmp}/ensaio-multi/fila; rm -rf $E && mkdir -p $E/bin\ncat > $E/bin/claude <<'SH'\n#!/usr/bin/env bash\n# claude FALSO: anota quem rodou o quê, demora 1 s e responde (nenhum modelo é chamado)\necho \"$PPID $2\" >> \"${E_LOG:?}\"; sleep 1; echo \"resposta para: $2\"\nSH\nchmod +x $E/bin/claude; export PATH=$E/bin:$PATH E_LOG=$E/execucoes.log\nnova_fila() { rm -rf $E/fila $E_LOG; mkdir -p $E/fila/entrada; for i in 1 2 3 4; do echo \"tarefa $i\" > $E/fila/entrada/0$i.md; done; }\nF=./ferramentas/fila-caseira.sh\n\necho \"## 1) roda e é interrompida no meio\"\nnova_fila; timeout -s INT 2.5 $F $E/fila\necho \"rodando: $(ls $E/fila/rodando) · feito: $(ls $E/fila/feito | tr '\\n' ' ')\"\necho \"## 2) roda de novo: retoma\"\n$F $E/fila | tail -1\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas\"\n\necho \"## 3) duas filas na mesma pasta, ao mesmo tempo\"\nnova_fila; $F $E/fila > $E/a.log 2>&1 & $F $E/fila > $E/b.log 2>&1 & wait\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas · repetidas: $(cut -d' ' -f2- $E_LOG | sort | uniq -d | tr '\\n' ' ')\"\n\necho \"## 4) a mesma coisa com flock\"\nnova_fila; flock -n $E/fila.lock $F $E/fila > $E/a.log 2>&1 &\nsleep 0.3; flock -n $E/fila.lock $F $E/fila || echo \"outra fila já roda nesta pasta (saída $?)\"; wait\necho \"execuções: $(wc -l < $E_LOG) para 4 tarefas\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>## 1) roda e é interrompida no meio\n→ 01.md\n  feito\n→ 02.md\n  feito\n→ 03.md\nrodando: 03.md · feito: 01.md 02.md \n## 2) roda de novo: retoma\nentrada: 0 · feito: 4 · falhou: 0\nexecuções: 5 para 4 tarefas\n## 3) duas filas na mesma pasta, ao mesmo tempo\nexecuções: 8 para 4 tarefas · repetidas: tarefa 1 tarefa 2 tarefa 3 tarefa 4 \n## 4) a mesma coisa com flock\noutra fila já roda nesta pasta (saída 1)\nexecuções: 4 para 4 tarefas</pre><p>Rodado três vezes, mesmo resultado. Em 2, a tarefa 3 rodou duas vezes (interrompida e retomada): a tarefa tem de aguentar rodar de novo. Em 3, as quatro rodaram duas vezes. Em 4, a segunda cópia nem começou.</p>"
+          },
+          {
+            "rot": "Por dentro da colisão",
+            "html": "<p>O log de uma das duas cópias da rodada 3 (caminho encurtado para <code>$E</code>):</p><pre>→ 01.md\nrm: cannot remove '$E/fila/fila/rodando/01.md': No such file or directory\n  feito\nmv: cannot stat '$E/fila/fila/entrada/02.md': No such file or directory\n→ 02.md\n(…)</pre><p>O <code>mv</code> falha porque a outra cópia já pegou o arquivo, mas o script segue e roda a tarefa mesmo assim, com o arquivo que a outra moveu para <code>rodando/</code>. E a retomada de uma cópia devolve à entrada o que a outra está rodando. Não é defeito de um agente: o script foi feito para uma cópia só, e a trava é o que garante isso.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "Sessões que editam o mesmo arquivo: a guarda de colisão",
+      "sub": "O projeto de treino traz colisao.mjs, um hook que anota quem editou cada arquivo e pergunta antes de outra sessão editar. Aqui, só a detecção; hook como guarda é o curso 4.",
+      "blocos": [
+        {
+          "rot": "Terminal · ensaio sem cota (duas sessões fingidas pelo session_id)",
+          "icone": "cadeado",
+          "conteudo": "cd ~/treino-multi\nexport INEMA_RUNTIME_ESTADO=${TMPDIR:-/tmp}/ensaio-multi/colisao; rm -rf $INEMA_RUNTIME_ESTADO\nG=runtime/mods/runtime-guarda/hooks/colisao.mjs\nj() { printf '{\"session_id\":\"%s\",\"cwd\":\"%s\",\"tool_input\":{\"file_path\":\"notas.md\"}}' \"$1\" \"$PWD\"; }\necho \"rascunho\" > notas.md\nj sessao-AAAAAAAA | node $G pos                      # a sessão A acabou de editar notas.md\necho \"## A quer editar de novo\"; j sessao-AAAAAAAA | node $G pre; echo \"(saída $?)\"\necho \"## B quer editar o mesmo arquivo\"; j sessao-BBBBBBBB | node $G pre; echo; echo \"(saída $?)\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>## A quer editar de novo\n(saída 0)\n## B quer editar o mesmo arquivo\n{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"Guarda de colisão: Outra sessão (sessao-A) editou notas.md agora há pouco. Seguir mesmo assim, usar outra cópia (worktree) ou cancelar?\"}}\n(saída 0)</pre><p>A mesma sessão passa calada. A outra recebe <code>\"permissionDecision\":\"ask\"</code>: o Claude Code para e pergunta. A janela padrão é de 30 min (<code>INEMA_COLISAO_MIN</code>). <code>INEMA_RUNTIME_ESTADO</code> manda o registro para a pasta de ensaio, para não misturar com o seu real.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "passos",
+      "titulo": "Colisões que já aconteceram nesta máquina",
+      "sub": "Do LESSONS.md do projeto de monitoramento do INEMA, com data. Cada uma virou uma regra de uma linha.",
+      "passos": [
+        {
+          "titulo": "Scratchpad",
+          "sub": "19/10/2026",
+          "texto": [
+            "Cursos feitos em paralelo por subagentes dividiam a mesma pasta temporária. Pasta de imagens com nome genérico colidiu: o script de um agente pulou a imagem porque a arte do outro já existia.",
+            "Regra: pasta temporária com o id da tarefa no nome."
+          ]
+        },
+        {
+          "titulo": "Linha que mudou",
+          "sub": "19/10/2026",
+          "texto": [
+            "Em arquivo dividido entre sessões (pendências, limites), editar pelo número da linha errou o alvo: outra sessão tinha inserido no topo.",
+            "Regra: casar pelo texto da própria linha, nunca pelo número."
+          ]
+        },
+        {
+          "titulo": "Commit alheio",
+          "sub": "05/10 e 19/10/2026",
+          "texto": [
+            "Uma imagem gerada direto na pasta do repo foi commitada por outra sessão que rodou git add -A. E edições do portal foram commitadas por outra sessão antes da hora.",
+            "Regra: gerar fora do repo e preparar a mudança em worktree isolada, mesmo com os arquivos limpos."
+          ]
+        },
+        {
+          "titulo": "Processo alheio",
+          "sub": "15/10/2026",
+          "texto": [
+            "Um servidor de teste de outra sessão foi derrubado porque ocupava a porta \"de sempre\".",
+            "Regra: porta livre de verdade e só matar processo depois de conferir que a pasta dele (/proc/[pid]/cwd) é a sua."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática",
+      "sub": "Fila, colisão e guarda, sem gastar cota.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E12 · Interromper e retomar",
+          "min": "10 min",
+          "texto": "Clone o jornada-agentes e rode as partes 1 e 2 do ensaio.",
+          "pronto": "aparecem <code>rodando: 03.md · feito: 01.md 02.md</code> e depois <code>execuções: 5 para 4 tarefas</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E13 · Colisão e flock",
+          "min": "10 min",
+          "texto": "Rode as partes 3 e 4. Depois escreva, numa linha do seu AGENTS.md ou CLAUDE.md, a regra de trava para os scripts de fila que você usa.",
+          "pronto": "a parte 3 imprime <code>execuções: 8 para 4 tarefas</code>; a parte 4 imprime <code>outra fila já roda nesta pasta (saída 1)</code> e <code>execuções: 4 para 4 tarefas</code>; <code>grep -c flock AGENTS.md CLAUDE.md</code> acha a sua regra."
+        },
+        {
+          "id": "e3",
+          "titulo": "E14 · Guarda de colisão",
+          "min": "10 min",
+          "texto": "Rode o ensaio da guarda no projeto de treino.",
+          "pronto": "a sessão A sai sem texto e <code>(saída 0)</code>; a sessão B imprime <code>\"permissionDecision\":\"ask\"</code> com <code>Outra sessão (sessao-A) editou notas.md</code>."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "A fila caiu no meio da tarefa 3. Na retomada, quantas vezes a tarefa 3 terá rodado?",
+          "opcoes": ["Uma", "Duas: a interrompida e a retomada", "Nenhuma", "Depende do modelo"],
+          "certa": 1,
+          "explica": "A retomada devolve rodando/ para entrada/. É \"pelo menos uma vez\": a tarefa precisa aguentar rodar de novo (idempotente).",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "Duas cópias da fila caseira na mesma pasta. O que o ensaio mostrou?",
+          "opcoes": ["Dividiram o trabalho", "Cada tarefa rodou duas vezes: 8 execuções para 4 tarefas", "A segunda falhou na hora", "O git acusou conflito"],
+          "certa": 1,
+          "explica": "O script foi feito para uma cópia só: o mv que falha não pula a tarefa, e a retomada de uma devolve o que a outra roda.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "Qual a correção mínima para a colisão de duas filas?",
+          "opcoes": ["Reescrever a fila", "flock -n numa trava da pasta: a segunda cópia sai na hora", "Rodar mais devagar", "Usar um modelo melhor"],
+          "certa": 1,
+          "explica": "Uma linha resolve. É a mesma trava do loop-longrun.sh do curso 2.",
+          "ref": "codigo"
+        },
+        {
+          "p": "O que a guarda de colisão responde quando outra sessão editou o arquivo há pouco?",
+          "opcoes": ["Bloqueia para sempre", "Pede confirmação (ask) com o motivo e sugere worktree", "Apaga a edição antiga", "Nada"],
+          "certa": 1,
+          "explica": "permissionDecision: ask. A decisão volta para quem está no comando, com a opção de usar outra cópia.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Retomada repete", "texto": "O que estava rodando volta para a entrada; cada tarefa tem de aguentar rodar de novo." },
+        { "t": "Uma fila por pasta", "texto": "Sem trava, duas cópias executam tudo duas vezes; flock -n resolve com uma linha." },
+        { "t": "Sessões se cruzam", "texto": "A guarda pergunta antes de editar o que outra sessão mexeu; worktree evita a pergunta." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir além",
+      "links": [
+        { "t": "Curso Filas (do-chat-ao-agente): a fila durável com inemaccbot", "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/", "icone": "fila" },
+        { "t": "fila-caseira.sh no jornada-agentes", "href": "https://github.com/inematds/jornada-agentes/blob/main/ferramentas/fila-caseira.sh", "icone": "terminal" },
+        { "t": "colisao.mjs (guarda de colisão do runtime)", "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/mods/runtime-guarda/hooks/colisao.mjs", "icone": "cadeado" },
+        { "t": "Curso 4 da formação: hooks como guarda", "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/", "icone": "escudo" }
+      ]
+    }
+  ]
+}

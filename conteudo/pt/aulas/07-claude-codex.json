@@ -1,0 +1,213 @@
+{
+  "slug": "claude-codex",
+  "num": 7,
+  "menu": "Claude + Codex",
+  "titulo": "Time Claude + Codex: roteamento por papel",
+  "titulo_curto": "Claude + Codex",
+  "minutos": 20,
+  "lead": "Dois modelos de casas diferentes erram em lugares diferentes. Isso vale quando cada um tem um papel: um faz, o outro revisa só lendo, com o mesmo briefing e o artefato real. Nesta aula você roteia papéis por nível, ensaia a ponte para o Codex sem gastar cota e põe o Codex para revisar, de verdade, um script deste curso.",
+  "objetivo": "rotear cada papel para o nível e a ferramenta certos e fazer o Codex revisar, só lendo, o que o Claude fez.",
+  "competencias": [
+    "rotear-por-nivel",
+    "revisao-cruzada",
+    "reconciliar-achados"
+  ],
+  "aprende": [
+    { "icone": "camadas", "t": "Os quatro níveis: menor, executor, topo e super" },
+    { "icone": "lista", "t": "O cartão de rotas: quem faz a primeira passada e quem confere" },
+    { "icone": "terminal", "t": "A ponte codex-exec.sh, read-only por padrão" },
+    { "icone": "check", "t": "Reconciliar: aceito, rejeitado com evidência ou em aberto" }
+  ],
+  "hero_alt": "Duas estações de trabalho diferentes lado a lado numa mesa escura, dividindo um caderno e uma folha impressa.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Roteamento por papel",
+      "sub": "Níveis do ROTEAMENTO.md do projeto de treino. Os nomes de modelo mudam; o nível fica. Clique em cada nível.",
+      "estilo": "escada",
+      "nos": [
+        {
+          "icone": "check",
+          "titulo": "Menor",
+          "sub": "triagem, formatar, checar",
+          "detalhe": "Comece aqui. Classificar, extrair, conferir critério que já existe. Suba de nível só se errar. No kit, a ponte para o Codex usa este nível por padrão."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Executor",
+          "sub": "o trabalho do dia a dia",
+          "detalhe": "Implementar o plano, rodar testes, mostrar a prova. É o nível da maior parte dos trabalhadores de um fan-out."
+        },
+        {
+          "icone": "cerebro",
+          "titulo": "Topo",
+          "sub": "planejar, decidir, revisar o difícil",
+          "forte": true,
+          "detalhe": "Planejador e revisor de mudanças de risco. Um por time costuma bastar; ele lê os resumos dos outros, não o trabalho inteiro."
+        },
+        {
+          "icone": "alvo",
+          "titulo": "Super",
+          "sub": "raro",
+          "detalhe": "Problema difícil ou decisão grande. Cada chamada consome a cota da sua assinatura; registre por que precisou."
+        }
+      ],
+      "legenda": "Regra 3 do ROTEAMENTO.md: revisão por outro modelo pega erros que o mesmo modelo não vê. Regra 4: agente chamando agente carrega as instruções do projeto; para pontes simples, pasta enxuta ou claude --bare."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "O cartão de rotas",
+      "sub": "Do kit agente-claude-codex (prompts/05-usar-os-dois.md). É ponto de partida editorial, não ranking medido: troque quando a sua evidência pedir.",
+      "passos": [
+        {
+          "titulo": "Planejar",
+          "sub": "Claude → Codex critica",
+          "texto": [
+            "Um escreve o plano com escopo, suposições e testes de aceite, sem implementar. O outro revisa só lendo e ataca as suposições.",
+            "No máximo duas rodadas de revisão. Saída: plano v2 e um arquivo de revisão."
+          ]
+        },
+        {
+          "titulo": "Construir",
+          "sub": "Claude em branch → Codex revisa o diff",
+          "texto": [
+            "Um implementa numa branch (ou worktree, aula 5) e roda os testes. O outro recebe o briefing, o diff e o resultado dos testes, e procura bugs e regressões antes de cosmética.",
+            "Sem merge, deploy ou publicação sem você."
+          ]
+        },
+        {
+          "titulo": "Bug difícil",
+          "sub": "Codex com meta limitada",
+          "texto": [
+            "O Codex com uma meta pequena e mensurável, e os testes mais um ponto de checagem humano como linha de chegada.",
+            "Fim: sucesso medido ou bloqueio claro, nunca \"quase\"."
+          ]
+        },
+        {
+          "titulo": "Trocar de sessão",
+          "sub": "handoff → prime",
+          "texto": [
+            "O que passa de um para o outro é arquivo: AGENTS.md, tasks/current.md, handoffs/latest.md. É o assunto do vídeo abaixo.",
+            "Regra única do cartão: o segundo agente recebe o mesmo briefing e o artefato real, nunca um reconto."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "A ponte para o Codex",
+      "sub": "runtime/pontes/codex-exec.sh manda o pedido pelo stdin, só aceita read-only e workspace-write e devolve a resposta final.",
+      "blocos": [
+        {
+          "rot": "Terminal · ensaio sem cota (codex falso no PATH)",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi && chmod +x runtime/pontes/codex-exec.sh\nE=${TMPDIR:-/tmp}/ensaio-multi/ponte; rm -rf $E && mkdir -p $E/bin\ncat > $E/bin/codex <<'SH'\n#!/usr/bin/env bash\n# codex FALSO: acha o -o e grava PONG nele (nenhum modelo é chamado)\nwhile [ $# -gt 0 ]; do [ \"$1\" = -o ] && out=$2; shift; done\ncat > /dev/null; echo PONG > \"$out\"\nSH\nchmod +x $E/bin/codex\nPATH=$E/bin:$PATH runtime/pontes/codex-exec.sh \"Responda apenas PONG\"; echo \"saída: $?\"\nPATH=$E/bin:$PATH runtime/pontes/codex-exec.sh \"apague tudo\" . danger-full-access; echo \"saída: $?\""
+        },
+        {
+          "rot": "Terminal · real: o Codex revisa o gera-avalia.sh da aula 4",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\nruntime/pontes/codex-exec.sh \"Responda apenas PONG\"; echo\nruntime/pontes/codex-exec.sh \"Revise, sem alterar nada, o arquivo gera-avalia.sh deste projeto. Procure bugs e riscos reais, não estilo. Responda em no máximo 6 linhas; a última linha é APROVADO ou FALTA: <o que corrigir>.\" > revisao-codex.txt\ncat revisao-codex.txt"
+        },
+        {
+          "rot": "revisao.md · a reconciliação (você ou o Claude escreve)",
+          "icone": "caneta",
+          "conteudo": "# Revisão do gera-avalia.sh pelo Codex — <data>\n\naceito: gerador que falha ou estoura o teto ainda era avaliado e podia aprovar sobra de rodada anterior → rodada com rc≠0 agora é REPROVADO sem avaliar (aula 4, aba \"Gerador caiu\")\naberto: verificar.mjs roda como bash os comandos do goal.md → o goal tem de ser arquivo confiável e protegido (curso 1: testes congelados; curso 4: o que o agente pode ler e rodar)\n\nconcordância não é prova: o que confirma cada \"aceito\" é o ensaio rodando de novo"
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>## ensaio (codex falso)\nPONG\nsaída: 0\nsandbox recusado pela POLITICA: danger-full-access\nsaída: 2\n\n## real (Codex CLI 0.163.0, pela assinatura)\nPONG\n- Se `claude`/`timeout` falhar ou atingir o limite, o script ignora o erro e ainda pode aprovar arquivos deixados por uma rodada anterior.\n- `verificar.mjs` executa como Bash os comandos do `goal.md`; um arquivo não confiável pode executar ações arbitrárias.\n- FALTA: abortar ou reprovar quando o gerador falhar e restringir a execução de goals a arquivos confiáveis.</pre><p>A revisão foi feita sobre a primeira versão do gera-avalia.sh. O primeiro achado era real e foi corrigido (a versão da aula 4 já é a corrigida); o segundo ficou em aberto, com dono em outro curso. Os títulos com ## separam as execuções.</p>"
+          },
+          {
+            "rot": "Erro comum: o Codex fica parado",
+            "html": "<p>Sem pedido na linha de comando e com a entrada aberta, o <code>codex exec</code> fica lendo o stdin e não sai. Capturado com um <code>sleep</code> segurando a entrada e teto de 8 s:</p><pre>$ sleep 20 | timeout 8 codex exec -s read-only --skip-git-repo-check; echo \"saída: $?\"\nReading prompt from stdin...\nsaída: 124</pre><p>Sem o <code>timeout</code>, ficaria parado. A ponte manda o pedido pelo stdin e fecha com <code>-</code>; use <code>-o</code> para gravar só a mensagem final e, em CI, <code>--json</code> para o progresso em eventos.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "video",
+      "titulo": "O mesmo contexto para os dois",
+      "chave": "claude-codex"
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática",
+      "sub": "Ensaio da ponte, depois uma revisão cruzada de verdade.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E15 · Ponte ensaiada",
+          "min": "5 min",
+          "texto": "Rode o ensaio com o codex falso.",
+          "pronto": "<code>PONG</code> e <code>saída: 0</code>; depois <code>sandbox recusado pela POLITICA: danger-full-access</code> e <code>saída: 2</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E16 · Revisão cruzada e reconciliação",
+          "min": "20 min",
+          "texto": "Rode a ponte de verdade sobre o gera-avalia.sh (ou sobre um diff seu: git diff main...HEAD &gt; diff.txt e peça a revisão do diff.txt). Escreva revisao.md com uma linha por achado.",
+          "pronto": "a última linha de <code>revisao-codex.txt</code> começa com <code>APROVADO</code> ou <code>FALTA:</code>, e <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "Por onde começar o nível de um papel novo?",
+          "opcoes": ["Pelo mais forte, para garantir", "Pelo menor que resolve, subindo só se errar", "Sempre executor", "Pelo mais barato, sem exceção"],
+          "certa": 1,
+          "explica": "Regra 1 do ROTEAMENTO.md. Cada chamada consome a cota; subir é decisão com motivo.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "O que o revisor Codex deve receber?",
+          "opcoes": ["Um resumo do que o Claude fez", "O mesmo briefing da tarefa e o artefato real (arquivo, diff, resultado de teste)", "A conversa inteira do Claude", "Só o nome do arquivo"],
+          "certa": 1,
+          "explica": "É a regra única do cartão de rotas. Reconto vago esconde o defeito que o revisor deveria achar.",
+          "ref": "passos",
+          "cert": true
+        },
+        {
+          "p": "A ponte recebeu o sandbox danger-full-access. O que acontece?",
+          "opcoes": ["Roda com acesso total", "Recusa com saída 2: só read-only e workspace-write passam", "Pede confirmação", "Cai para read-only calada"],
+          "certa": 1,
+          "explica": "A política está no próprio script: \"sandbox recusado pela POLITICA\" e código 2.",
+          "ref": "codigo"
+        },
+        {
+          "p": "O Codex apontou dois achados. O que fazer com eles?",
+          "opcoes": ["Aplicar os dois sem conferir", "Reconciliar cada um: aceito (com prova), rejeitado com evidência ou em aberto com dono", "Ignorar, porque o Claude já tinha aprovado", "Pedir uma terceira opinião"],
+          "certa": 1,
+          "explica": "Concordância e discordância não provam nada sozinhas. Cada achado ganha um destino, e o aceito se confirma rodando o ensaio de novo.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Nível por papel", "texto": "Menor, executor, topo, super: comece no menor e registre por que subiu." },
+        { "t": "Mesmo briefing, artefato real", "texto": "O segundo modelo revisa só lendo, com o que o primeiro recebeu e o que ele produziu." },
+        { "t": "Reconciliar", "texto": "Cada achado vira aceito, rejeitado com evidência ou em aberto, no máximo em duas rodadas." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir além",
+      "links": [
+        { "t": "Kit agente-claude-codex: prompts para usar os dois", "href": "https://github.com/inematds/agente-claude-codex/blob/main/prompts/05-usar-os-dois.md", "icone": "arquivo" },
+        { "t": "ROTEAMENTO.md do runtime (níveis e regras)", "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/ROTEAMENTO.md", "icone": "camadas" },
+        { "t": "Receita R1: Claude usa o Codex", "href": "https://github.com/inematds/inema-agent-runtime/blob/main/runtime/receitas/R1-claude-usa-codex.md", "icone": "terminal" },
+        { "t": "Codex CLI: referência de comandos", "href": "https://developers.openai.com/codex/cli/reference", "icone": "lupa" }
+      ]
+    }
+  ]
+}

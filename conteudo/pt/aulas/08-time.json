@@ -1,0 +1,225 @@
+{
+  "slug": "time",
+  "num": 8,
+  "menu": "Seu time",
+  "titulo": "Projetar o time do seu loop",
+  "titulo_curto": "Seu time",
+  "minutos": 20,
+  "lead": "Um time de agentes cabe numa página: a decisão da aula 1 e, para cada papel, nível, ferramentas, o que escreve, isolamento, entrada, retorno, quem verifica e teto. Escrito assim, um script confere se falta campo ou se dois papéis gravam no mesmo lugar sem isolamento. Nesta aula você escreve o time.md do seu loop, confere e roda.",
+  "objetivo": "escrever o time.md do seu loop (papel, nível, ferramentas, dono dos arquivos, isolamento, retorno, verificação, teto) e rodá-lo.",
+  "competencias": [
+    "projetar-time-de-agentes",
+    "atribuir-dono-de-arquivo",
+    "planejar-verificacao-e-tetos"
+  ],
+  "aprende": [
+    { "icone": "lista", "t": "Os oito campos de cada papel" },
+    { "icone": "pasta", "t": "Dono de arquivo: quem escreve onde, e isolado como" },
+    { "icone": "check", "t": "Um conferidor que acusa campo faltando e colisão" },
+    { "icone": "calendario", "t": "O mapa do curso e o seu plano com datas" }
+  ],
+  "hero_alt": "Quadro escuro com fichas brancas sem texto presas em árvore, ligadas por fios, sob uma luminária.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Do pedido ao time",
+      "sub": "Cada etapa usa uma aula do curso. Clique para ver qual.",
+      "nos": [
+        {
+          "icone": "portao",
+          "titulo": "Decisão",
+          "sub": "aula 1",
+          "detalhe": "Rode a matriz. Se der \"direto\", o seu time é um agente e o time.md tem um papel só. Se der híbrido, escreva o que fica em sequência e o que vai em paralelo."
+        },
+        {
+          "icone": "robo",
+          "titulo": "Papéis",
+          "sub": "aulas 2, 4 e 7",
+          "detalhe": "Poucos papéis, cada um com saída verificável: quem planeja, quem faz, quem confere por código, quem revisa por modelo. Nível pelo papel (menor, executor, topo, super), nunca pelo nome do modelo."
+        },
+        {
+          "icone": "pasta",
+          "titulo": "Donos",
+          "sub": "aulas 5 e 6",
+          "forte": true,
+          "detalhe": "Para cada papel que escreve: em que pastas e com que isolamento (worktree ou sandbox). Dois papéis escrevendo no mesmo lugar sem isolamento é a gravação perdida da aula 5; o conferidor acusa."
+        },
+        {
+          "icone": "check",
+          "titulo": "Verificação",
+          "sub": "aula 4",
+          "detalhe": "Cada papel tem quem o verifica: script de critérios, revisor sem escrita ou você num portão. Nenhum papel se verifica sozinho."
+        },
+        {
+          "icone": "relogio",
+          "titulo": "Tetos",
+          "sub": "aulas 3 e 4",
+          "detalhe": "Rodadas e tempo por papel. O teto de rodadas para o laço gerador × avaliador; o timeout por item segura o fan-out. Teto de ciclos e memória do loop inteiro é o curso 2."
+        }
+      ],
+      "legenda": "Comece com o menor time que faz o trabalho. Papel novo só entra quando você souber dizer o que ele devolve e quem confere."
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "O time.md e o conferidor",
+      "sub": "Copie o modelo, troque pelos papéis do seu loop e rode o conferidor. Nenhum modelo é chamado.",
+      "blocos": [
+        {
+          "rot": "time.md · modelo com quatro papéis",
+          "icone": "arquivo",
+          "conteudo": "# Time do loop — [nome do loop]\n\nDecisão (aula 1): híbrido — planejar e revisar no centro; executar em paralelo só os itens independentes.\n\n## papel: planejador\n- nível: topo\n- ferramentas: Read, Grep, Glob\n- escreve em: nada\n- isolamento: nenhum (só lê)\n- entrada: goal.md\n- retorno: plano em até 5 passos + critérios comando → saída (quem grava em plans/ é o orquestrador)\n- verificado por: você (portão humano antes de executar)\n- teto: 1 rodada\n\n## papel: executor\n- nível: executor\n- ferramentas: Read, Write, Edit, Bash, Grep, Glob\n- escreve em: src/ tests/novos/\n- isolamento: worktree\n- entrada: plano aprovado\n- retorno: lista de arquivos mudados + saída dos testes\n- verificado por: avaliador\n- teto: 3 rodadas, 600 s cada\n\n## papel: avaliador\n- nível: menor\n- ferramentas: Read, Bash, Grep, Glob\n- escreve em: nada\n- isolamento: sandbox read-only\n- entrada: goal.md + diff + saída dos testes\n- retorno: OK/FALHA por critério + APROVADO ou FALTA\n- verificado por: script verificar.mjs\n- teto: 1 rodada por entrega\n\n## papel: revisor-codex\n- nível: executor\n- ferramentas: codex exec -s read-only\n- escreve em: nada\n- isolamento: sandbox read-only\n- entrada: mesmo briefing + diff real\n- retorno: até 6 linhas, última APROVADO ou FALTA\n- verificado por: você reconcilia (aceito, rejeitado com evidência, em aberto)\n- teto: 2 rodadas"
+        },
+        {
+          "rot": "confere-time.py · salve ao lado do time.md",
+          "icone": "check",
+          "conteudo": "# confere-time.py — confere o time.md: todo papel tem os 8 campos, e nenhum\n# arquivo tem dois donos sem isolamento (a colisão das aulas 5 e 6).\n# Uso: python3 confere-time.py time.md\nimport re, sys\n\nCAMPOS = [\"nível\", \"ferramentas\", \"escreve em\", \"isolamento\", \"entrada\",\n          \"retorno\", \"verificado por\", \"teto\"]\nNIVEIS = {\"menor\", \"executor\", \"topo\", \"super\"}\ntexto = open(sys.argv[1], encoding=\"utf-8\").read()\npapeis = re.findall(r\"^## papel: *(.+?)\\n(.*?)(?=^## |\\Z)\", texto, re.M | re.S)\nproblemas = 0\ndonos = {}\nfor nome, corpo in papeis:\n    campos = dict(re.findall(r\"^- ([^:]+): *(.+)$\", corpo, re.M))\n    faltam = [c for c in CAMPOS if not campos.get(c, \"\").strip()]\n    if faltam:\n        print(f\"{nome}: falta {', '.join(faltam)}\"); problemas += 1\n    if campos.get(\"nível\") and campos[\"nível\"] not in NIVEIS:\n        print(f\"{nome}: nível '{campos['nível']}' não é menor/executor/topo/super\"); problemas += 1\n    escreve = campos.get(\"escreve em\", \"nada\")\n    if escreve != \"nada\" and campos.get(\"isolamento\", \"nenhum\").startswith(\"nenhum\"):\n        for alvo in escreve.split():\n            donos.setdefault(alvo, []).append(nome)\n    if escreve != \"nada\" and \"ferramentas\" in campos and not re.search(r\"Write|Edit|Bash|workspace-write\", campos[\"ferramentas\"]):\n        print(f\"{nome}: escreve em {escreve}, mas as ferramentas só leem\"); problemas += 1\nfor alvo, quem in donos.items():\n    if len(quem) > 1:\n        print(f\"colisão: {alvo} tem {len(quem)} donos sem isolamento ({', '.join(quem)})\"); problemas += 1\nprint(f\"papéis: {len(papeis)} · problemas: {problemas}\")\nsys.exit(1 if problemas or not papeis else 0)"
+        },
+        {
+          "rot": "Terminal · conferir",
+          "icone": "terminal",
+          "conteudo": "cd ~/treino-multi\npython3 confere-time.py time.md; echo \"saída: $?\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre>papéis: 4 · problemas: 0\nsaída: 0</pre><p>O modelo passa. O planejador escreve \"nada\": quem grava o plano em disco é o orquestrador. Na primeira versão do modelo, o planejador dizia \"escreve em: plans/\" com ferramentas só de leitura, e o conferidor acusou a contradição.</p>"
+          },
+          {
+            "rot": "Erro comum: dois executores na mesma pasta",
+            "html": "<p>O mesmo time com o executor sem worktree e um segundo executor, sem teto, também gravando em <code>src/</code>:</p><pre>executor-2: falta teto\ncolisão: src/ tem 2 donos sem isolamento (executor, executor-2)\npapéis: 5 · problemas: 2\nsaída: 1</pre><p>Duas saídas: dar um worktree a cada executor (aula 5) ou dividir as pastas por dono (o que a doc de agent teams pede).</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática final",
+      "sub": "O seu time no papel, conferido, e uma rodada de verdade.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E17 · O time.md do seu loop",
+          "min": "30 min",
+          "texto": "Rode a matriz (aula 1) para o loop que você quer montar. Escreva o time.md com os papéis que a decisão pede, troque [nome do loop] e rode o conferidor.",
+          "pronto": "<code>python3 confere-time.py time.md; echo \"saída: $?\"</code> → <code>papéis: N · problemas: 0</code> e <code>saída: 0</code>, com N igual ao número de papéis que você escreveu."
+        },
+        {
+          "id": "e2",
+          "titulo": "E18 · Uma rodada do time",
+          "min": "45 min",
+          "dias": 1,
+          "texto": "Escolha uma tarefa pequena do seu projeto. Escreva o goal com 2 ou 3 critérios e faça commit dele. O executor roda pelo gera-avalia.sh num worktree (git worktree add) e o revisor Codex lê o diff pela ponte. Reconcilie os achados no revisao.md.",
+          "pronto": "<code>./gera-avalia.sh goal.md \"[pedido]\"</code> termina em <code>→ APROVADO</code> e <code>saída: 0</code>; a última linha da revisão começa com <code>APROVADO</code> ou <code>FALTA:</code>; <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
+        }
+      ]
+    },
+    {
+      "tipo": "mapa",
+      "titulo": "O mapa do curso",
+      "sub": "Quatro entregas, na ordem. Clique num exercício para ver o \"pronto quando\".",
+      "degraus": [
+        { "aula": "quando", "icone": "portao", "quando": "Dia 1", "titulo": "Decidir", "sub": "aula 1", "saida": "decisao.md com 3 tarefas suas e nenhum aviso.", "passo": "A matriz antes de qualquer agente. Se tudo der \"direto\", o resto do curso vira reserva para quando precisar." },
+        { "aula": "avaliador", "icone": "robo", "quando": "Dias 1 e 2", "titulo": "Delegar e conferir", "sub": "aulas 2, 3 e 4", "saida": "Subagente de leitura, fan-out com teto e laço gerador × avaliador aprovando.", "passo": "Requer o dia 1. Cada peça primeiro com agente falso, depois uma chamada real pequena." },
+        { "aula": "filas", "icone": "cadeado", "quando": "Dia 3", "titulo": "Isolar", "sub": "aulas 5 e 6", "saida": "Gravação perdida provada, worktree e sandbox por papel, fila travada com flock.", "passo": "Requer os dias 1 e 2. Tudo sem cota: repositório descartável, codex sandbox, claude falso no PATH." },
+        { "aula": "time", "icone": "check", "quando": "Dias 4 e 5", "titulo": "Seu time", "sub": "aulas 7 e 8", "saida": "time.md conferido e uma rodada real com revisão cruzada reconciliada.", "passo": "Requer tudo antes. A revisão do Codex num dia; a rodada do time, no seguinte." }
+      ],
+      "resultado": {
+        "titulo": "Ao final do curso",
+        "texto": "Um time de agentes do tamanho do trabalho, escrito numa página, conferido por script e rodado uma vez de verdade.",
+        "total": "18 exercícios"
+      },
+      "rolagem_fim": {
+        "titulo": "O curso inteiro",
+        "texto": "Decidir, delegar e conferir, isolar e montar o seu time. Só passe para a próxima entrega quando o \"pronto quando\" da anterior for verdade."
+      },
+      "legenda": "Ordem obrigatória: time sem isolamento repete a gravação perdida, e time sem avaliador volta a confiar no \"pronto\" do gerador."
+    },
+    {
+      "tipo": "gerador",
+      "titulo": "Gere o seu plano com datas",
+      "sub": "Escolha o início e quanto tempo você tem por semana. O plano lista os 18 exercícios na ordem.",
+      "curso": "Multiagente e Orquestração",
+      "horas_padrao": 5,
+      "degraus": [
+        { "titulo": "Aula 1 · Quando não usar", "aula": "quando" },
+        { "titulo": "Aula 2 · Subagentes", "aula": "subagentes" },
+        { "titulo": "Aula 3 · Fan-out", "aula": "fanout" },
+        { "titulo": "Aula 4 · Gerador × avaliador", "aula": "avaliador" },
+        { "titulo": "Aula 5 · Worktrees e sandboxes", "aula": "isolamento" },
+        { "titulo": "Aula 6 · Filas e colisão", "aula": "filas" },
+        { "titulo": "Aula 7 · Claude + Codex", "aula": "claude-codex" },
+        { "titulo": "Aula 8 · Seu time", "aula": "time" }
+      ],
+      "txt": {
+        "titulo": "Plano — Multiagente e Orquestração",
+        "inicio": "Início",
+        "ritmo": "Ritmo",
+        "termino": "Término previsto",
+        "ate": "até",
+        "pronto": "pronto quando",
+        "semanas": "semanas",
+        "travou": "## O que travou e a regra que criei",
+        "h": "h por semana",
+        "exs": "exercícios"
+      }
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "A matriz da aula 1 deu \"direto\" para o seu loop. Como fica o time.md?",
+          "opcoes": ["Com quatro papéis, por segurança", "Com um papel só (e quem o verifica)", "Vazio", "Com um papel por modelo que você tem"],
+          "certa": 1,
+          "explica": "O menor time que faz o trabalho. Papel novo entra quando você sabe o que ele devolve e quem confere.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "O conferidor acusou \"colisão: src/ tem 2 donos sem isolamento\". Quais são as correções?",
+          "opcoes": ["Apagar o conferidor", "Worktree para cada executor ou dividir as pastas por dono", "Trocar o modelo", "Aumentar o teto"],
+          "certa": 1,
+          "explica": "É a gravação perdida da aula 5 vista no papel, antes de acontecer.",
+          "ref": "codigo",
+          "cert": true
+        },
+        {
+          "p": "Por que o campo \"verificado por\" é obrigatório para todo papel?",
+          "opcoes": ["Para documentar", "Porque nenhum papel se verifica sozinho: o \"pronto\" do gerador não decide", "Porque o validador exige", "Para o plano com datas"],
+          "certa": 1,
+          "explica": "Aula 4: quem decide é outro processo, olhando o artefato. Sem esse campo, o time volta a confiar no relato.",
+          "ref": "diagrama"
+        },
+        {
+          "p": "No modelo, o planejador escreve \"nada\". Quem grava o plano em disco?",
+          "opcoes": ["O avaliador", "O orquestrador (a sessão principal ou o script)", "O revisor Codex", "Ninguém"],
+          "certa": 1,
+          "explica": "O planejador só tem ferramentas de leitura. Dizer que ele escreve em plans/ foi a contradição que o conferidor pegou na primeira versão.",
+          "ref": "codigo"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Uma página", "texto": "Decisão e, por papel, nível, ferramentas, onde escreve, isolamento, entrada, retorno, verificação e teto." },
+        { "t": "Conferido por script", "texto": "Campo faltando, nível sem sentido e dois donos sem isolamento aparecem antes de rodar." },
+        { "t": "Rodado uma vez", "texto": "Executor num worktree, avaliador por código, revisão cruzada reconciliada." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Continue por aqui",
+      "links": [
+        { "t": "Próximo curso da formação: Segurança do loop autônomo (curso 4)", "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/", "icone": "seta" },
+        { "t": "Área LOOP-R Engenharia", "href": "https://eventos.inema.pro/loop-r-engenharia/", "icone": "camadas" },
+        { "t": "INEMA Agent Runtime: guia do kit de treino", "href": "https://inematds.github.io/inema-agent-runtime/guia/", "icone": "robo" },
+        { "t": "Claude Code: Run agents in parallel", "href": "https://code.claude.com/docs/en/agents", "icone": "lupa" }
+      ]
+    }
+  ]
+}

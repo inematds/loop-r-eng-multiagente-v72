@@ -1,0 +1,228 @@
+{
+  "slug": "quando",
+  "num": 1,
+  "menu": "Quando não",
+  "titulo": "Quando NÃO usar multiagente",
+  "titulo_curto": "Quando não usar",
+  "minutos": 15,
+  "lead": "Cada agente a mais lê o contexto de novo, gasta a própria cota e precisa ser coordenado. Na maior parte das tarefas de código, um agente só, ou subagentes que devolvem pouco, rende mais. Nesta aula você decide antes de abrir o segundo agente, com uma matriz de sinais que roda como script.",
+  "objetivo": "decidir entre um agente, sequência, paralelo ou híbrido pela matriz de sinais, antes de abrir o segundo agente.",
+  "competencias": [
+    "decidir-quando-paralelizar",
+    "estimar-custo-de-coordenacao",
+    "reconhecer-tarefa-simples"
+  ],
+  "aprende": [
+    { "icone": "grafico", "t": "Quanto custa um time: os números publicados e o que eles medem" },
+    { "icone": "lista", "t": "Os 6 sinais de sequência e os 7 de paralelo" },
+    { "icone": "portao", "t": "A regra da diferença de 2 pontos e o híbrido" },
+    { "icone": "terminal", "t": "A matriz como script, com as suas tarefas" }
+  ],
+  "hero_alt": "Uma chave de fenda sozinha numa bancada escura, ao lado de uma caixa de ferramentas fechada.",
+  "secoes": [
+    {
+      "tipo": "diagrama",
+      "titulo": "Antes do segundo agente",
+      "sub": "Clique em cada etapa. A matriz é do kit arquiteto-de-execucao (agenteexecuta).",
+      "nos": [
+        {
+          "icone": "chat",
+          "titulo": "Pedido",
+          "sub": "o que precisa sair",
+          "detalhe": "Comece pelo resultado e pelo tamanho. Se cabe numa conversa e o critério de pronto é um comando só, não há time a montar."
+        },
+        {
+          "icone": "check",
+          "titulo": "É simples?",
+          "sub": "pequena → direto",
+          "detalhe": "Tarefa simples e pequena não passa pela matriz: um agente só faz. Abrir subagente para resumir um texto é o erro que a Anthropic descreve no próprio sistema de pesquisa: agentes criando 50 subagentes para perguntas simples."
+        },
+        {
+          "icone": "camadas",
+          "titulo": "Sinais S",
+          "sub": "6 de sequência",
+          "itens": [
+            { "icone": "seta", "t": "depende da saída anterior" },
+            { "icone": "memoria", "t": "contexto compartilhado grande" },
+            { "icone": "x", "t": "erro inicial contamina o resto" }
+          ],
+          "detalhe": "Um ponto para cada: depende da saída anterior; contexto compartilhado grande; decisões precisam ficar consistentes; erro inicial contamina várias tarefas; juntar versões divergentes sai caro; uma etapa ensina a seguinte."
+        },
+        {
+          "icone": "fila",
+          "titulo": "Sinais P",
+          "sub": "7 de paralelo",
+          "itens": [
+            { "icone": "check", "t": "tarefas independentes" },
+            { "icone": "cadeado", "t": "entradas congeladas" },
+            { "icone": "chip", "t": "trabalho mecânico" }
+          ],
+          "detalhe": "Um ponto para cada: tarefas independentes; entradas congeladas; cada saída se valida sozinha; trabalho mecânico ou determinístico; contexto pequeno por tarefa; urgência alta; há máquina sobrando."
+        },
+        {
+          "icone": "portao",
+          "titulo": "Decisão",
+          "sub": "diferença ≥ 2 vence",
+          "forte": true,
+          "detalhe": "Diferença de 2 pontos ou mais: vence o lado maior. Menos que 2 ou empate: híbrido (o que depende fica em sequência, o resto em paralelo). Custo de erro alto, qualquer que seja a pontuação: planejamento e revisão ficam no centro, mesmo que a execução seja paralela."
+        }
+      ],
+      "legenda": "A matriz é ponto de partida, não medição. Ela evita o reflexo de abrir agentes porque dá."
+    },
+    {
+      "tipo": "passos",
+      "titulo": "O custo que não aparece no pedido",
+      "sub": "O que está publicado, com data, e o que cada número mede.",
+      "passos": [
+        {
+          "titulo": "Tokens",
+          "sub": "Anthropic, jun/2025",
+          "texto": [
+            "No post sobre o sistema de pesquisa da Anthropic (13/06/2025): agentes gastam cerca de 4× os tokens de um chat, e sistemas multiagente cerca de 15×. Os dados são deles, num produto de pesquisa.",
+            "A doc de agent teams do Claude Code diz o mesmo sem número: um time usa significativamente mais tokens que uma sessão, e o gasto cresce com cada colega ativo."
+          ]
+        },
+        {
+          "titulo": "Ganho",
+          "sub": "onde ele aparece",
+          "texto": [
+            "No mesmo post, líder Opus 4 com subagentes Sonnet 4 superou o Opus 4 sozinho em 90,2% na avaliação interna de pesquisa deles, em perguntas de amplitude (muitas direções independentes).",
+            "O próprio post avisa: a maioria das tarefas de código tem menos partes paralelizáveis que pesquisa, e agentes ainda coordenam mal em tempo real. Não há medição deste curso que transfira esse ganho para o seu código."
+          ]
+        },
+        {
+          "titulo": "Contexto",
+          "sub": "a preparação repetida",
+          "texto": [
+            "A matriz do arquiteto-de-execucao mostra a conta (exemplo ilustrativo, não medido): três agentes que leem 50 mil de contexto e trabalham 20 mil cada somam 210 mil; um agente que reaproveita o contexto faz o mesmo com 110 mil.",
+            "A economia vem de não repetir a preparação. Paralelo vale quando cada tarefa tem contexto pequeno."
+          ]
+        },
+        {
+          "titulo": "Limites",
+          "sub": "regras do kit",
+          "texto": [
+            "Nenhum subagente sem tarefa, entrada e saída explícitas; no máximo um nível de delegação, salvo necessidade clara; duas tentativas por item antes de repensar; não reprocessar item aprovado.",
+            "Trabalho mecânico (converter, renderizar, rodar teste) vai para script, não para agente."
+          ]
+        }
+      ]
+    },
+    {
+      "tipo": "codigo",
+      "titulo": "A matriz como script",
+      "sub": "Escreva os sinais de cada tarefa num arquivo; o script soma e decide. Nada de modelo: roda de graça.",
+      "blocos": [
+        {
+          "rot": "Terminal · projeto de treino do curso (uma vez)",
+          "icone": "terminal",
+          "conteudo": "git clone https://github.com/inematds/inema-agent-runtime.git ~/treino-multi\ncd ~/treino-multi && git log -1 --format='%h %cs'   # testado em 5cb431b 2026-10-05"
+        },
+        {
+          "rot": "decide.py · salve em ~/treino-multi/",
+          "icone": "arquivo",
+          "conteudo": "# decide.py — matriz de decisão do arquiteto-de-execucao (inematds/agenteexecuta), em código\n# Uso: python3 decide.py tarefas.txt\n# tarefas.txt: um bloco por tarefa; \"# nome\" abre o bloco; depois, um código por linha:\n#   S1..S6 = sinais de sequência, P1..P7 = sinais de paralelo,\n#   simples = tarefa pequena (não aplica a matriz), erro-caro = custo de erro alto\nimport sys\n\nSEQ = {\"S1\": \"depende da saída anterior\", \"S2\": \"contexto compartilhado grande\",\n       \"S3\": \"decisões precisam ficar consistentes\", \"S4\": \"erro inicial contamina várias tarefas\",\n       \"S5\": \"juntar versões divergentes sai caro\", \"S6\": \"uma etapa ensina a seguinte\"}\nPAR = {\"P1\": \"tarefas independentes\", \"P2\": \"entradas congeladas\",\n       \"P3\": \"cada saída se valida sozinha\", \"P4\": \"trabalho mecânico ou determinístico\",\n       \"P5\": \"contexto pequeno por tarefa\", \"P6\": \"urgência alta\", \"P7\": \"há máquina sobrando\"}\n\ndef decide(nome, cods):\n    print(f\"# {nome}\")\n    for c in cods:\n        if c not in SEQ and c not in PAR and c not in (\"simples\", \"erro-caro\"):\n            print(f\"aviso: código desconhecido '{c}' (ignorado)\")\n    if \"simples\" in cods:\n        print(\"decisão: direto (um agente só, sem matriz)\\n\")\n        return\n    s = sum(c in SEQ for c in cods)\n    p = sum(c in PAR for c in cods)\n    if abs(s - p) >= 2:\n        d = \"sequencial\" if s > p else \"paralelo\"\n    else:\n        d = \"híbrido\"\n    print(f\"sequência: {s} · paralelo: {p} · diferença: {abs(s - p)}\")\n    print(f\"decisão: {d}\")\n    if \"erro-caro\" in cods:\n        print(\"custo de erro alto: planejamento e revisão centralizados\")\n    print()\n\nnome, cods = None, []\nfor linha in open(sys.argv[1], encoding=\"utf-8\"):\n    linha = linha.strip()\n    if linha.startswith(\"#\"):\n        if nome:\n            decide(nome, cods)\n        nome, cods = linha.lstrip(\"# \").strip(), []\n    elif linha:\n        cods.append(linha.split()[0])\nif nome:\n    decide(nome, cods)"
+        },
+        {
+          "rot": "tarefas.txt · quatro tarefas de exemplo",
+          "icone": "lista",
+          "conteudo": "# refatorar o módulo de login\nS1  cada passo usa o anterior\nS2  o módulo inteiro precisa estar na cabeça\nS3  nomes e contratos iguais em todo lugar\nS4  um erro no contrato quebra o resto\nerro-caro\n\n# converter 500 arquivos .md para .html\nP1  um arquivo não depende do outro\nP2  o conversor e o modelo estão fechados\nP3  cada .html se confere sozinho\nP4  é mecânico\nP5  cada arquivo é pequeno\n\n# pesquisa de mercado em 4 segmentos\nS3  as perguntas têm de ser as mesmas\nS6  o primeiro segmento ajusta as perguntas\nP1  segmentos independentes\nP5  pouco contexto por segmento\n\n# resumir um texto em 5 linhas\nsimples"
+        },
+        {
+          "rot": "Terminal · rodar",
+          "icone": "play",
+          "conteudo": "cd ~/treino-multi\npython3 decide.py tarefas.txt; echo \"saída: $?\""
+        }
+      ],
+      "saida": {
+        "selo": "real",
+        "abas": [
+          {
+            "rot": "Saída capturada (19/10/2026)",
+            "html": "<pre># refatorar o módulo de login\nsequência: 4 · paralelo: 0 · diferença: 4\ndecisão: sequencial\ncusto de erro alto: planejamento e revisão centralizados\n\n# converter 500 arquivos .md para .html\nsequência: 0 · paralelo: 5 · diferença: 5\ndecisão: paralelo\n\n# pesquisa de mercado em 4 segmentos\nsequência: 2 · paralelo: 2 · diferença: 0\ndecisão: híbrido\n\n# resumir um texto em 5 linhas\ndecisão: direto (um agente só, sem matriz)\n\nsaída: 0</pre><p>A conversão de 500 arquivos é paralelo mecânico: script com vários trabalhadores e conferência por amostra no centro (é a aula 3). A pesquisa empatou: o primeiro segmento roda sozinho, os outros três em paralelo.</p>"
+          },
+          {
+            "rot": "Erro comum: código digitado errado",
+            "html": "<p>Código em minúscula não conta. O script avisa em vez de somar calado, e a decisão muda. Capturado no mesmo dia:</p><pre># migrar o banco\naviso: código desconhecido 's1' (ignorado)\nsequência: 1 · paralelo: 1 · diferença: 0\ndecisão: híbrido</pre><p>Com <code>S1</code> certo, seria sequência 2 × paralelo 1, ainda híbrido, mas por um motivo que você escolheu. Confira <code>grep -c \"^aviso:\" decisao.md</code> → <code>0</code>.</p>"
+          }
+        ]
+      }
+    },
+    {
+      "tipo": "pratica",
+      "titulo": "Prática",
+      "sub": "Primeiro o exemplo, depois três tarefas suas.",
+      "exercicios": [
+        {
+          "id": "e1",
+          "titulo": "E1 · A matriz no exemplo",
+          "min": "10 min",
+          "texto": "Clone o projeto de treino, salve decide.py e tarefas.txt e rode.",
+          "pronto": "<code>python3 decide.py tarefas.txt | grep -c \"^decisão:\"</code> → <code>4</code>, e a pesquisa de mercado sai <code>decisão: híbrido</code>."
+        },
+        {
+          "id": "e2",
+          "titulo": "E2 · Três tarefas suas",
+          "min": "20 min",
+          "texto": "Escreva minhas-tarefas.txt com três tarefas reais da sua semana (uma que você pensou em dividir entre agentes). Marque só os sinais que são verdade hoje.",
+          "pronto": "<code>python3 decide.py minhas-tarefas.txt &gt; decisao.md</code>; <code>grep -c \"^decisão:\" decisao.md</code> → <code>3</code> e <code>grep -c \"^aviso:\" decisao.md</code> → <code>0</code>."
+        }
+      ]
+    },
+    {
+      "tipo": "quiz",
+      "titulo": "Teste da aula",
+      "perguntas": [
+        {
+          "p": "Segundo o post da Anthropic (jun/2025), quanto um sistema multiagente gasta em tokens comparado a um chat?",
+          "opcoes": ["O mesmo", "Cerca de 4×", "Cerca de 15×", "Metade, por dividir o trabalho"],
+          "certa": 2,
+          "explica": "Cerca de 15× (e agentes isolados, cerca de 4×), nos dados do sistema de pesquisa deles. Dividir o trabalho não divide o contexto: cada agente lê o seu.",
+          "ref": "passos",
+          "cert": true
+        },
+        {
+          "p": "Sequência 3, paralelo 2. O que a matriz manda?",
+          "opcoes": ["Sequencial", "Paralelo", "Híbrido", "Um agente só"],
+          "certa": 2,
+          "explica": "A diferença é 1, menor que 2: híbrido. O erro comum é escolher o lado maior por qualquer diferença.",
+          "ref": "diagrama",
+          "cert": true
+        },
+        {
+          "p": "Uma migração com custo de erro alto pontuou paralelo. O que muda?",
+          "opcoes": ["Nada, roda em paralelo", "Planejamento e revisão ficam no centro, mesmo com execução paralela", "Vira sequencial", "Só usa o modelo mais forte"],
+          "certa": 1,
+          "explica": "Erro caro centraliza o plano e a revisão, qualquer que seja a pontuação. A execução dos itens independentes ainda pode ser paralela.",
+          "ref": "diagrama"
+        },
+        {
+          "p": "Por que o ganho de 90,2% do sistema de pesquisa não vale direto para o seu código?",
+          "opcoes": ["Porque o número é falso", "Porque foi medido em pesquisa de amplitude, e código costuma ter menos partes paralelizáveis", "Porque usaram API", "Porque o Claude Code não tem subagentes"],
+          "certa": 1,
+          "explica": "O próprio post faz a ressalva: o ganho aparece em perguntas com muitas direções independentes. Em código, as dependências pesam mais.",
+          "ref": "passos"
+        }
+      ]
+    },
+    {
+      "tipo": "resumo",
+      "titulo": "Em três frases",
+      "itens": [
+        { "t": "Time custa", "texto": "Cada agente relê o contexto e gasta a própria cota; publicado: cerca de 15× tokens de um chat." },
+        { "t": "Matriz antes", "texto": "Sinais de sequência × paralelo; diferença de 2 decide, menos que isso é híbrido; erro caro centraliza." },
+        { "t": "Simples é direto", "texto": "Tarefa pequena não passa pela matriz, e trabalho mecânico vai para script." }
+      ]
+    },
+    {
+      "tipo": "links",
+      "titulo": "Para ir além",
+      "links": [
+        { "t": "Anthropic: How we built our multi-agent research system (13/06/2025)", "href": "https://www.anthropic.com/engineering/multi-agent-research-system", "icone": "lupa" },
+        { "t": "Claude Code: comparar subagentes, agent view, agent teams e workflows", "href": "https://code.claude.com/docs/en/agents", "icone": "camadas" },
+        { "t": "Skill arquiteto-de-execucao (matriz e limites operacionais)", "href": "https://github.com/inematds/agenteexecuta", "icone": "arquivo" },
+        { "t": "Curso 0 da formação: o loop em cinco peças", "href": "https://inematds.github.io/loop-r-eng-base-v72/", "icone": "seta" }
+      ]
+    }
+  ]
+}
