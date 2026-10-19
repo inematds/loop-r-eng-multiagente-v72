@@ -241,12 +241,12 @@
         {
           "p": "The matrix from lesson 1 said \"direct\" for your loop. What does time.md look like?",
           "opcoes": [
-            "With four roles, to be safe",
-            "With a single role (and whoever verifies it)",
             "Empty",
-            "With one role per model you have"
+            "With four roles, to be safe",
+            "With one role per model you have",
+            "With a single role (and whoever verifies it)"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "The smallest team that does the job. A new role comes in when you know what it returns and who checks it.",
           "ref": "diagrama",
           "cert": true
@@ -254,12 +254,12 @@
         {
           "p": "The checker flagged \"colisão: src/ tem 2 donos sem isolamento\". What are the fixes?",
           "opcoes": [
-            "Delete the checker",
-            "A worktree for each executor, or split the folders by owner",
+            "Raise the cap",
             "Change the model",
-            "Raise the cap"
+            "Delete the checker",
+            "A worktree for each executor, or split the folders by owner"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "It's the lost write from lesson 5, seen on paper before it happens.",
           "ref": "codigo",
           "cert": true
@@ -267,12 +267,12 @@
         {
           "p": "Why is the \"verificado por\" field required for every role?",
           "opcoes": [
+            "For the plan with dates",
             "To document",
             "Because no role verifies itself: the generator's \"done\" doesn't decide",
-            "Because the validator requires it",
-            "For the plan with dates"
+            "Because the validator requires it"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Lesson 4: someone else decides, a different process looking at the artifact. Without this field, the team goes back to trusting the report.",
           "ref": "diagrama"
         },
@@ -280,11 +280,11 @@
           "p": "In the model, the planner writes \"nada\". Who writes the plan to disk?",
           "opcoes": [
             "The evaluator",
-            "The orchestrator (the main session or the script)",
-            "The Codex reviewer",
-            "Nobody"
+            "The Codex reviewer, which has workspace-write and writes to plans/",
+            "Nobody",
+            "The orchestrator (the main session or the script)"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "The planner only has read tools. Saying it writes to plans/ was the contradiction the checker caught in the first version.",
           "ref": "codigo"
         }

@@ -172,31 +172,31 @@
       "perguntas": [
         {
           "p": "A matriz da aula 1 deu \"direto\" para o seu loop. Como fica o time.md?",
-          "opcoes": ["Com quatro papéis, por segurança", "Com um papel só (e quem o verifica)", "Vazio", "Com um papel por modelo que você tem"],
-          "certa": 1,
+          "opcoes": ["Vazio", "Com quatro papéis, por segurança", "Com um papel por modelo que você tem", "Com um papel só (e quem o verifica)"],
+          "certa": 3,
           "explica": "O menor time que faz o trabalho. Papel novo entra quando você sabe o que ele devolve e quem confere.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "O conferidor acusou \"colisão: src/ tem 2 donos sem isolamento\". Quais são as correções?",
-          "opcoes": ["Apagar o conferidor", "Worktree para cada executor ou dividir as pastas por dono", "Trocar o modelo", "Aumentar o teto"],
-          "certa": 1,
+          "opcoes": ["Aumentar o teto", "Trocar o modelo", "Apagar o conferidor", "Worktree para cada executor ou dividir as pastas por dono"],
+          "certa": 3,
           "explica": "É a gravação perdida da aula 5 vista no papel, antes de acontecer.",
           "ref": "codigo",
           "cert": true
         },
         {
           "p": "Por que o campo \"verificado por\" é obrigatório para todo papel?",
-          "opcoes": ["Para documentar", "Porque nenhum papel se verifica sozinho: o \"pronto\" do gerador não decide", "Porque o validador exige", "Para o plano com datas"],
-          "certa": 1,
+          "opcoes": ["Para o plano com datas", "Para documentar", "Porque nenhum papel se verifica sozinho: o \"pronto\" do gerador não decide", "Porque o validador exige"],
+          "certa": 2,
           "explica": "Aula 4: quem decide é outro processo, olhando o artefato. Sem esse campo, o time volta a confiar no relato.",
           "ref": "diagrama"
         },
         {
           "p": "No modelo, o planejador escreve \"nada\". Quem grava o plano em disco?",
-          "opcoes": ["O avaliador", "O orquestrador (a sessão principal ou o script)", "O revisor Codex", "Ninguém"],
-          "certa": 1,
+          "opcoes": ["O avaliador", "O revisor Codex, que tem workspace-write e grava em plans/", "Ninguém", "O orquestrador (a sessão principal ou o script)"],
+          "certa": 3,
           "explica": "O planejador só tem ferramentas de leitura. Dizer que ele escreve em plans/ foi a contradição que o conferidor pegou na primeira versão.",
           "ref": "codigo"
         }

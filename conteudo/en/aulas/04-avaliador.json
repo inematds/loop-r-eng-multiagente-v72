@@ -195,8 +195,8 @@
           "opcoes": [
             "That it's done",
             "Nothing: the evaluator decides, by looking at the artifact",
-            "That the round was good",
-            "That you can skip the evaluator"
+            "That you can skip the evaluator",
+            "That the round was good"
           ],
           "certa": 1,
           "explica": "In the rehearsal, the phrase came along with a wrong file. The report stays in the log; the decision belongs to verificar.mjs.",
@@ -206,12 +206,12 @@
         {
           "p": "What should the evaluator receive?",
           "opcoes": [
-            "The generator's summary",
             "The real artifact: file, diff, or test output, plus the criteria",
             "The whole conversation",
+            "The generator's summary, which already says what was done and saves the evaluator's context",
             "Only the request"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "A vague recap hides the defect. The rule in the agente-claude-codex kit is to give the second agent the same briefing and the artifact.",
           "ref": "diagrama",
           "cert": true
@@ -219,24 +219,24 @@
         {
           "p": "The generator exited with an error, but a correct saudacao.txt from before was on disk. What should the script do?",
           "opcoes": [
-            "Evaluate and approve",
             "Fail the round without evaluating",
+            "Evaluate the file that's on disk and approve it if it's correct",
             "Delete the goal",
             "Stop with 0"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Evaluating the leftover would approve work this round did not do. This was the defect Codex pointed out, and it was fixed in the script.",
           "ref": "codigo"
         },
         {
           "p": "Two different models agreed the work is correct. Does that prove it?",
           "opcoes": [
-            "Yes, two votes are enough",
             "No: they may share the same wrong assumption; code-based criteria come first",
+            "Yes, two votes are enough",
             "Yes, if they are from different companies",
             "Only if it's the top model"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Agreement helps, but it is not independent proof. The criterion that runs and prints the expected output is the proof.",
           "ref": "diagrama"
         }

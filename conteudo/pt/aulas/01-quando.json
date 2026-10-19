@@ -175,31 +175,31 @@
       "perguntas": [
         {
           "p": "Segundo o post da Anthropic (jun/2025), quanto um sistema multiagente gasta em tokens comparado a um chat?",
-          "opcoes": ["O mesmo", "Cerca de 4×", "Cerca de 15×", "Metade, por dividir o trabalho"],
-          "certa": 2,
+          "opcoes": ["Cerca de 4×", "O mesmo", "Metade, por dividir o trabalho", "Cerca de 15×"],
+          "certa": 3,
           "explica": "Cerca de 15× (e agentes isolados, cerca de 4×), nos dados do sistema de pesquisa deles. Dividir o trabalho não divide o contexto: cada agente lê o seu.",
           "ref": "passos",
           "cert": true
         },
         {
           "p": "Sequência 3, paralelo 2. O que a matriz manda?",
-          "opcoes": ["Sequencial", "Paralelo", "Híbrido", "Um agente só"],
-          "certa": 2,
+          "opcoes": ["Um agente só", "Híbrido", "Sequencial", "Paralelo"],
+          "certa": 1,
           "explica": "A diferença é 1, menor que 2: híbrido. O erro comum é escolher o lado maior por qualquer diferença.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "Uma migração com custo de erro alto pontuou paralelo. O que muda?",
-          "opcoes": ["Nada, roda em paralelo", "Planejamento e revisão ficam no centro, mesmo com execução paralela", "Vira sequencial", "Só usa o modelo mais forte"],
+          "opcoes": ["Vira sequencial", "Plano e revisão ficam centralizados; a execução segue paralela", "Só troca o modelo de todos os agentes pelo mais forte disponível", "Nada: a pontuação já decidiu, então tudo roda em paralelo, inclusive o plano"],
           "certa": 1,
           "explica": "Erro caro centraliza o plano e a revisão, qualquer que seja a pontuação. A execução dos itens independentes ainda pode ser paralela.",
           "ref": "diagrama"
         },
         {
           "p": "Por que o ganho de 90,2% do sistema de pesquisa não vale direto para o seu código?",
-          "opcoes": ["Porque o número é falso", "Porque foi medido em pesquisa de amplitude, e código costuma ter menos partes paralelizáveis", "Porque usaram API", "Porque o Claude Code não tem subagentes"],
-          "certa": 1,
+          "opcoes": ["Porque usaram API", "Porque o Claude Code não tem subagentes, só o sistema interno de pesquisa da Anthropic", "Porque foi medido em pesquisa de amplitude, e código tem menos partes paralelas", "Porque o número é falso"],
+          "certa": 2,
           "explica": "O próprio post faz a ressalva: o ganho aparece em perguntas com muitas direções independentes. Em código, as dependências pesam mais.",
           "ref": "passos"
         }

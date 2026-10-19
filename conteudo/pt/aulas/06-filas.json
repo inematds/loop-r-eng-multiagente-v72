@@ -203,15 +203,15 @@
       "perguntas": [
         {
           "p": "A fila caiu no meio da tarefa 3. Na retomada, quantas vezes a tarefa 3 terá rodado?",
-          "opcoes": ["Uma", "Duas: a interrompida e a retomada", "Nenhuma", "Depende do modelo"],
-          "certa": 1,
+          "opcoes": ["Depende do modelo: se ele salvou o progresso, a retomada continua de onde parou", "Uma", "Duas: a interrompida e a retomada", "Nenhuma"],
+          "certa": 2,
           "explica": "A retomada devolve rodando/ para entrada/. É \"pelo menos uma vez\": a tarefa precisa aguentar rodar de novo (idempotente).",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "Duas cópias da fila caseira na mesma pasta. O que o ensaio mostrou?",
-          "opcoes": ["Dividiram o trabalho", "Cada tarefa rodou duas vezes: 8 execuções para 4 tarefas", "A segunda falhou na hora", "O git acusou conflito"],
+          "opcoes": ["Dividiram o trabalho: cada cópia pegou duas das quatro tarefas", "Cada tarefa rodou duas vezes: 8 execuções para 4 tarefas", "O git acusou conflito", "A segunda falhou na hora"],
           "certa": 1,
           "explica": "O script foi feito para uma cópia só: o mv que falha não pula a tarefa, e a retomada de uma devolve o que a outra roda.",
           "ref": "codigo",
@@ -219,15 +219,15 @@
         },
         {
           "p": "Qual a correção mínima para a colisão de duas filas?",
-          "opcoes": ["Reescrever a fila", "flock -n numa trava da pasta: a segunda cópia sai na hora", "Rodar mais devagar", "Usar um modelo melhor"],
-          "certa": 1,
+          "opcoes": ["Usar um modelo melhor", "Rodar mais devagar", "flock -n numa trava da pasta: a segunda cópia sai na hora", "Reescrever a fila com um banco de dados no lugar das pastas de entrada"],
+          "certa": 2,
           "explica": "Uma linha resolve. É a mesma trava do loop-longrun.sh do curso 2.",
           "ref": "codigo"
         },
         {
           "p": "O que a guarda de colisão responde quando outra sessão editou o arquivo há pouco?",
-          "opcoes": ["Bloqueia para sempre", "Pede confirmação (ask) com o motivo e sugere worktree", "Apaga a edição antiga", "Nada"],
-          "certa": 1,
+          "opcoes": ["Pede confirmação (ask) com o motivo e sugere worktree", "Apaga a edição antiga", "Bloqueia para sempre", "Nada"],
+          "certa": 0,
           "explica": "permissionDecision: ask. A decisão volta para quem está no comando, com a opção de usar outra cópia.",
           "ref": "codigo"
         }

@@ -241,12 +241,12 @@
         {
           "p": "La matriz de la clase 1 dio \"direto\" para tu loop. ¿Cómo queda el time.md?",
           "opcoes": [
-            "Con cuatro papeles, por seguridad",
-            "Con un solo papel (y quien lo verifica)",
             "Vacío",
-            "Con un papel por cada modelo que tienes"
+            "Con cuatro papeles, por seguridad",
+            "Con un papel por cada modelo que tienes",
+            "Con un solo papel (y quien lo verifica)"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "El equipo más pequeño que hace el trabajo. Un papel nuevo entra cuando sabes qué devuelve y quién lo revisa.",
           "ref": "diagrama",
           "cert": true
@@ -254,12 +254,12 @@
         {
           "p": "El verificador avisó \"colisão: src/ tem 2 donos sem isolamento\". ¿Cuáles son las correcciones?",
           "opcoes": [
-            "Borrar el verificador",
-            "Un worktree para cada ejecutor o dividir las carpetas por dueño",
+            "Aumentar el tope",
             "Cambiar el modelo",
-            "Aumentar el tope"
+            "Borrar el verificador",
+            "Un worktree para cada ejecutor o dividir las carpetas por dueño"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Es la escritura perdida de la clase 5 vista sobre el papel, antes de que ocurra.",
           "ref": "codigo",
           "cert": true
@@ -267,12 +267,12 @@
         {
           "p": "¿Por qué el campo \"verificado por\" es obligatorio para todo papel?",
           "opcoes": [
+            "Para el plan con fechas",
             "Para documentar",
             "Porque ningún papel se verifica a sí mismo: el \"listo\" del generador no decide",
-            "Porque el validador lo exige",
-            "Para el plan con fechas"
+            "Porque el validador lo exige"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Clase 4: quien decide es otro proceso, mirando el artefacto. Sin ese campo, el equipo vuelve a confiar en el reporte.",
           "ref": "diagrama"
         },
@@ -280,11 +280,11 @@
           "p": "En el modelo, el planificador escribe \"nada\". ¿Quién guarda el plan en disco?",
           "opcoes": [
             "El evaluador",
-            "El orquestador (la sesión principal o el script)",
-            "El revisor Codex",
-            "Nadie"
+            "El revisor Codex, que tiene workspace-write y graba en plans/",
+            "Nadie",
+            "El orquestador (la sesión principal o el script)"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "El planificador solo tiene herramientas de lectura. Decir que escribe en plans/ fue la contradicción que el verificador detectó en la primera versión.",
           "ref": "codigo"
         }

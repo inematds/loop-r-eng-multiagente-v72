@@ -182,12 +182,12 @@
         {
           "p": "What comes back from the subagent to the main conversation?",
           "opcoes": [
-            "Its whole history",
-            "Only the final answer",
             "The files it read",
-            "Nothing, it writes to disk"
+            "Nothing, it writes to disk",
+            "Only the final answer",
+            "Its whole history"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Only the final answer comes back. That's why the return format, written in the body of the file, is the most important part.",
           "ref": "diagrama",
           "cert": true
@@ -195,10 +195,10 @@
         {
           "p": "Does the subagent receive the main conversation's history?",
           "opcoes": [
-            "Yes, always",
-            "No: it gets its own prompt, the task message, the CLAUDE.md and the git status; the fork is what inherits the conversation",
+            "Only if the agent file has model: inherit, which makes it inherit the model and the whole conversation",
+            "No: it gets its own prompt, the task, the CLAUDE.md and the git status; the fork is what inherits",
             "Only the last 10 messages",
-            "Only if it has model: inherit"
+            "Yes, always"
           ],
           "certa": 1,
           "explica": "A regular subagent starts clean. The fork inherits the whole conversation, and in doing so loses input isolation.",
@@ -208,24 +208,24 @@
         {
           "p": "A reviewer has tools: Read, Bash, Grep, Glob and the instruction \"don't change files\". Can it write?",
           "opcoes": [
-            "No, the instruction prevents it",
             "Yes: Bash writes; the instruction is a request, the tool list is the lock",
-            "No, because it doesn't have Write",
+            "No, because Write and Edit aren't on the list, and without them there's no way to save a file",
+            "No, the instruction prevents it",
             "Only if it's opus"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "With Bash it can write using echo, sed, or rm. To really lock it down: sandbox (lesson 5) or a permission rule (course 4).",
           "ref": "codigo"
         },
         {
           "p": "When is it NOT worth delegating to a subagent?",
           "opcoes": [
-            "A search that generates a lot of logs",
             "A task with a lot of back and forth and phases that share the same context",
+            "Self-contained work whose result fits in a short summary for the main conversation",
             "Restrict tools",
-            "Self-contained work that fits in a summary"
+            "A search that generates a lot of logs"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Back and forth and shared context stay in the main conversation; the subagent starts from scratch and would have to reread everything.",
           "ref": "diagrama"
         }

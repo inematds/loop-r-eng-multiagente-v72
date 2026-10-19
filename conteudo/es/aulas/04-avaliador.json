@@ -195,8 +195,8 @@
           "opcoes": [
             "Que terminó",
             "Nada: quien decide es el evaluador, mirando el artefacto",
-            "Que la ronda fue buena",
-            "Que se puede saltar el evaluador"
+            "Que se puede saltar el evaluador",
+            "Que la ronda fue buena"
           ],
           "certa": 1,
           "explica": "En el ensayo, la frase vino junto con un archivo equivocado. El relato queda en el log; la decisión es de verificar.mjs.",
@@ -206,12 +206,12 @@
         {
           "p": "¿Qué debe recibir el evaluador?",
           "opcoes": [
-            "El resumen del generador",
             "El artefacto real: archivo, diff o salida de test, más los criterios",
             "La conversación completa",
+            "El resumen del generador, que ya dice qué se hizo y ahorra contexto del evaluador",
             "Solo el pedido"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Un resumen vago esconde el defecto. La regla del kit agente-claude-codex es darle al segundo agente el mismo briefing y el artefacto.",
           "ref": "diagrama",
           "cert": true
@@ -219,24 +219,24 @@
         {
           "p": "El generador salió con error, pero había un saudacao.txt correcto de antes en el disco. ¿Qué debe hacer el script?",
           "opcoes": [
-            "Evaluar y aprobar",
             "Reprobar la ronda sin evaluar",
+            "Evaluar el archivo que está en disco y aprobar si está correcto",
             "Borrar el goal",
             "Parar con 0"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Evaluar lo que sobró aprobaría trabajo que esta ronda no hizo. Fue el defecto señalado por Codex y corregido en el script.",
           "ref": "codigo"
         },
         {
           "p": "Dos modelos distintos coincidieron en que el trabajo está bien. ¿Eso prueba algo?",
           "opcoes": [
-            "Sí, dos votos bastan",
             "No: pueden compartir la misma suposición equivocada; el criterio por código va primero",
+            "Sí, dos votos bastan",
             "Sí, si son de empresas distintas",
             "Solo si es el modelo tope"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "La coincidencia ayuda, pero no es prueba independiente. El criterio que se ejecuta e imprime la salida esperada es la prueba.",
           "ref": "diagrama"
         }

@@ -173,12 +173,12 @@
         {
           "p": "¿Por dónde empezar el nivel de un rol nuevo?",
           "opcoes": [
-            "Por el más fuerte, para asegurar",
             "Por el más pequeño que resuelva, subiendo solo si falla",
             "Siempre ejecutor",
-            "Por el más barato, sin excepción"
+            "Por el más barato, sin excepción",
+            "Por el más fuerte, para asegurar, y baja después si sobra cuota"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Regla 1 del ROTEAMENTO.md. Cada llamada consume la cuota; subir es una decisión con motivo.",
           "ref": "diagrama",
           "cert": true
@@ -186,12 +186,12 @@
         {
           "p": "¿Qué debe recibir el revisor Codex?",
           "opcoes": [
-            "Un resumen de lo que hizo Claude",
-            "El mismo briefing de la tarea y el artefacto real (archivo, diff, resultado de prueba)",
+            "El mismo briefing de la tarea y el artefacto real (archivo, diff, prueba)",
             "Toda la conversación de Claude",
-            "Solo el nombre del archivo"
+            "Solo el nombre del archivo",
+            "Un resumen de lo que hizo Claude, para que el revisor no gaste cuota releyendo todo"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Es la regla única de la tarjeta de rutas. Un recuento vago esconde el defecto que el revisor debería encontrar.",
           "ref": "passos",
           "cert": true
@@ -201,8 +201,8 @@
           "opcoes": [
             "Se ejecuta con acceso total",
             "Lo rechaza con salida 2: solo read-only y workspace-write pasan",
-            "Pide confirmación",
-            "Cae a read-only en silencio"
+            "Cae a read-only callada y sigue corriendo sin avisar a quien la llamó",
+            "Pide confirmación"
           ],
           "certa": 1,
           "explica": "La política está en el propio script: \"sandbox recusado pela POLITICA\" y código 2.",
@@ -211,12 +211,12 @@
         {
           "p": "Codex señaló dos hallazgos. ¿Qué hacer con ellos?",
           "opcoes": [
-            "Aplicar los dos sin verificar",
-            "Conciliar cada uno: aceito (con prueba), rejeitado con evidencia o aberto con responsable",
+            "Pedir una tercera opinión",
             "Ignorarlos, porque Claude ya había aprobado",
-            "Pedir una tercera opinión"
+            "Aplicar los dos sin verificar",
+            "Conciliar cada uno: aceito (con prueba), rejeitado con evidencia o aberto con responsable"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "La concordancia y la discordancia no prueban nada por sí solas. Cada hallazgo recibe un destino, y el aceito se confirma ejecutando el ensayo de nuevo.",
           "ref": "codigo"
         }

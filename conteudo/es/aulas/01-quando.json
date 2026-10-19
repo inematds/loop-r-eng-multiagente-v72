@@ -206,12 +206,12 @@
         {
           "p": "Según el post de Anthropic (jun/2025), ¿cuánto gasta en tokens un sistema multiagente comparado con un chat?",
           "opcoes": [
-            "Lo mismo",
             "Cerca de 4×",
-            "Cerca de 15×",
-            "La mitad, por dividir el trabajo"
+            "Lo mismo",
+            "La mitad, por dividir el trabajo",
+            "Cerca de 15×"
           ],
-          "certa": 2,
+          "certa": 3,
           "explica": "Cerca de 15× (y agentes aislados, cerca de 4×), según los datos de su sistema de investigación. Dividir el trabajo no divide el contexto: cada agente lee el suyo.",
           "ref": "passos",
           "cert": true
@@ -219,12 +219,12 @@
         {
           "p": "Secuencia 3, paralelo 2. ¿Qué indica la matriz?",
           "opcoes": [
-            "Secuencial",
-            "Paralelo",
+            "Un solo agente",
             "Híbrido",
-            "Un solo agente"
+            "Secuencial",
+            "Paralelo"
           ],
-          "certa": 2,
+          "certa": 1,
           "explica": "La diferencia es 1, menor que 2: híbrido. El error común es elegir el lado mayor por cualquier diferencia.",
           "ref": "diagrama",
           "cert": true
@@ -232,10 +232,10 @@
         {
           "p": "Una migración con costo de error alto puntuó paralelo. ¿Qué cambia?",
           "opcoes": [
-            "Nada, corre en paralelo",
-            "La planificación y la revisión quedan en el centro, aun con ejecución paralela",
             "Pasa a ser secuencial",
-            "Solo usa el modelo más fuerte"
+            "El plan y la revisión quedan centralizados; la ejecución sigue en paralelo",
+            "Solo cambia el modelo de todos los agentes por el más fuerte disponible",
+            "Nada: la puntuación ya decidió, así que todo corre en paralelo, incluido el plan"
           ],
           "certa": 1,
           "explica": "Un error costoso centraliza el plan y la revisión, sea cual sea la puntuación. La ejecución de los ítems independientes todavía puede ser paralela.",
@@ -244,12 +244,12 @@
         {
           "p": "¿Por qué la ganancia de 90,2% del sistema de investigación no vale directamente para tu código?",
           "opcoes": [
-            "Porque el número es falso",
-            "Porque se midió en investigación de amplitud, y el código suele tener menos partes paralelizables",
             "Porque usaron API",
-            "Porque Claude Code no tiene subagentes"
+            "Porque Claude Code no tiene subagentes, solo el sistema interno de investigación de Anthropic",
+            "Porque se midió en investigación de amplitud, y el código tiene menos partes paralelas",
+            "Porque el número es falso"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "El propio post hace la salvedad: la ganancia aparece en preguntas con muchas direcciones independientes. En código, las dependencias pesan más.",
           "ref": "passos"
         }

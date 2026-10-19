@@ -216,12 +216,12 @@
         {
           "p": "The queue crashed in the middle of task 3. When it resumes, how many times will task 3 have run?",
           "opcoes": [
+            "Depends on the model: if it saved progress, the resume continues from where it stopped",
             "One",
             "Two: the interrupted one and the resumed one",
-            "None",
-            "It depends on the model"
+            "None"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "The resume moves rodando/ back to entrada/. It is \"at least once\": the task has to handle running again (idempotent).",
           "ref": "diagrama",
           "cert": true
@@ -229,10 +229,10 @@
         {
           "p": "Two copies of the home-made queue in the same folder. What did the rehearsal show?",
           "opcoes": [
-            "They split the work",
+            "They split the work: each copy took two of the four tasks",
             "Each task ran twice: 8 runs for 4 tasks",
-            "The second one failed right away",
-            "Git reported a conflict"
+            "Git reported a conflict",
+            "The second one failed right away"
           ],
           "certa": 1,
           "explica": "The script was built for a single copy: the mv that fails does not skip the task, and one copy's resume gives back what the other is running.",
@@ -242,24 +242,24 @@
         {
           "p": "What is the minimum fix for the collision of two queues?",
           "opcoes": [
-            "Rewrite the queue",
-            "flock -n on a folder lock: the second copy exits right away",
+            "Use a better model",
             "Run slower",
-            "Use a better model"
+            "flock -n on a folder lock: the second copy exits right away",
+            "Rewrite the queue with a database in place of the input folders"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "One line fixes it. It is the same lock as the loop-longrun.sh from course 2.",
           "ref": "codigo"
         },
         {
           "p": "What does the collision guard answer when another session edited the file a moment ago?",
           "opcoes": [
-            "Blocks forever",
             "Asks for confirmation (ask) with the reason and suggests a worktree",
             "Deletes the old edit",
+            "Blocks forever",
             "Nothing"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "permissionDecision: ask. The decision goes back to whoever is in charge, with the option of using another copy.",
           "ref": "codigo"
         }

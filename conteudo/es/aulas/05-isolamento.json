@@ -209,7 +209,7 @@
             "Entraron los dos cambios",
             "La última escritura borró la otra, sin error",
             "Git avisó del conflicto",
-            "El segundo agente esperó al primero"
+            "El segundo agente esperó a que el primero terminara, porque el archivo estaba abierto"
           ],
           "certa": 1,
           "explica": "Leer, pensar y escribir el archivo entero es una carrera: quien escribe al último gana. Nada avisa.",
@@ -219,12 +219,12 @@
         {
           "p": "¿Por qué el conflicto en el merge de dos worktrees es una buena señal?",
           "opcoes": [
-            "Porque es raro",
-            "Porque convierte la pérdida silenciosa en un punto de decisión visible",
             "Porque git lo resuelve solo",
-            "Porque borra las dos versiones"
+            "Porque es raro",
+            "Porque borra las dos versiones",
+            "Porque convierte la pérdida silenciosa en un punto de decisión visible"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Git se detiene y muestra las dos versiones. Quien decide es el orquestador o tú.",
           "ref": "codigo",
           "cert": true
@@ -233,11 +233,11 @@
           "p": "Un subagente con isolation: worktree no encuentra el cambio que hiciste y no commiteaste. ¿Por qué?",
           "opcoes": [
             "Bug",
-            "Su worktree parte de la branch predeterminada, no del HEAD ni de los archivos de tu sesión",
             "Falta .worktreeinclude",
+            "Su worktree parte de la branch predeterminada, no del HEAD ni de los archivos de tu sesión",
             "Está en read-only"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Según la doc: la branch parte de la branch predeterminada. Haz commit antes de delegar, o pasa el diff en el pedido.",
           "ref": "passos"
         },
@@ -246,10 +246,10 @@
           "opcoes": [
             "danger-full-access",
             "workspace-write",
-            "read-only",
-            "Ninguno"
+            "Ninguno",
+            "read-only"
           ],
-          "certa": 2,
+          "certa": 3,
           "explica": "read-only no escribe ni en la carpeta. workspace-write es para quien ejecuta; el acceso total la doc solo lo recomienda dentro de una VM dedicada.",
           "ref": "codigo"
         }

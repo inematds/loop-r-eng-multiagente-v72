@@ -182,12 +182,12 @@
         {
           "p": "¿Qué vuelve del subagente a la conversación principal?",
           "opcoes": [
-            "Todo su historial",
-            "Solo la respuesta final",
             "Los archivos que leyó",
-            "Nada, él graba en disco"
+            "Nada, él graba en disco",
+            "Solo la respuesta final",
+            "Todo su historial"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Solo vuelve la respuesta final. Por eso el formato del retorno, escrito en el cuerpo del archivo, es la parte más importante.",
           "ref": "diagrama",
           "cert": true
@@ -195,10 +195,10 @@
         {
           "p": "¿El subagente recibe el historial de la conversación principal?",
           "opcoes": [
-            "Sí, siempre",
-            "No: recibe su propio prompt, el mensaje de tarea, el CLAUDE.md y el git status; quien hereda la conversación es el fork",
+            "Solo si el archivo del agente tiene model: inherit, que hace que herede el modelo y toda la conversación",
+            "No: recibe prompt propio, la tarea, el CLAUDE.md y el git status; quien hereda es el fork",
             "Solo los últimos 10 mensajes",
-            "Solo si tiene model: inherit"
+            "Sí, siempre"
           ],
           "certa": 1,
           "explica": "El subagente común empieza limpio. El fork hereda toda la conversación y, con eso, pierde el aislamiento de entrada.",
@@ -208,24 +208,24 @@
         {
           "p": "Un revisor tiene tools: Read, Bash, Grep, Glob y la instrucción \"não altere arquivos\". ¿Puede grabar?",
           "opcoes": [
-            "No, la instrucción lo impide",
             "Sí: Bash graba; la instrucción es un pedido, la lista de herramientas es el seguro",
-            "No, porque no tiene Write",
+            "No, porque no tiene Write ni Edit en la lista, y sin ellas no hay cómo grabar un archivo",
+            "No, la instrucción lo impide",
             "Solo si es opus"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Con Bash puede escribir con echo, sed o rm. Para bloquearlo de verdad: sandbox (lección 5) o regla de permiso (curso 4).",
           "ref": "codigo"
         },
         {
           "p": "¿Cuándo NO conviene delegar a un subagente?",
           "opcoes": [
-            "Búsqueda que genera mucho log",
             "Tarea con mucho ida y vuelta y fases que comparten el mismo contexto",
+            "Trabajo autocontenido, cuyo resultado cabe en un resumen corto para la conversación principal",
             "Restringir herramientas",
-            "Trabajo autocontenido que cabe en un resumen"
+            "Búsqueda que genera mucho log"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "El ida y vuelta y el contexto compartido se quedan en la conversación principal; el subagente empieza de cero y tendría que releer todo.",
           "ref": "diagrama"
         }

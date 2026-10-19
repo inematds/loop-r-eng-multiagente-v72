@@ -216,12 +216,12 @@
         {
           "p": "La cola se cayó en medio de la tarea 3. Al retomar, ¿cuántas veces habrá corrido la tarea 3?",
           "opcoes": [
+            "Depende del modelo: si guardó el progreso, la reanudación continúa desde donde quedó",
             "Una",
             "Dos: la interrumpida y la retomada",
-            "Ninguna",
-            "Depende del modelo"
+            "Ninguna"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "La retomada devuelve rodando/ a entrada/. Es \"al menos una vez\": la tarea tiene que aguantar correr de nuevo (idempotente).",
           "ref": "diagrama",
           "cert": true
@@ -229,10 +229,10 @@
         {
           "p": "Dos copias de la cola casera en la misma carpeta. ¿Qué mostró el ensayo?",
           "opcoes": [
-            "Se repartieron el trabajo",
+            "Dividieron el trabajo: cada copia tomó dos de las cuatro tareas",
             "Cada tarea corrió dos veces: 8 ejecuciones para 4 tareas",
-            "La segunda falló al instante",
-            "Git avisó de un conflicto"
+            "Git avisó de un conflicto",
+            "La segunda falló al instante"
           ],
           "certa": 1,
           "explica": "El script fue hecho para una sola copia: el mv que falla no salta la tarea, y la retomada de una devuelve lo que la otra está corriendo.",
@@ -242,24 +242,24 @@
         {
           "p": "¿Cuál es la corrección mínima para la colisión de dos colas?",
           "opcoes": [
-            "Reescribir la cola",
-            "flock -n en un bloqueo de la carpeta: la segunda copia sale al instante",
+            "Usar un modelo mejor",
             "Correr más despacio",
-            "Usar un modelo mejor"
+            "flock -n en un bloqueo de la carpeta: la segunda copia sale al instante",
+            "Reescribir la cola con una base de datos en lugar de las carpetas de entrada"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Una línea lo resuelve. Es el mismo bloqueo del loop-longrun.sh del curso 2.",
           "ref": "codigo"
         },
         {
           "p": "¿Qué responde la guardia de colisión cuando otra sesión editó el archivo hace poco?",
           "opcoes": [
-            "Bloquea para siempre",
             "Pide confirmación (ask) con el motivo y sugiere worktree",
             "Borra la edición antigua",
+            "Bloquea para siempre",
             "Nada"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "permissionDecision: ask. La decisión vuelve a quien está al mando, con la opción de usar otra copia.",
           "ref": "codigo"
         }

@@ -181,7 +181,7 @@
       "perguntas": [
         {
           "p": "Dois agentes editaram o mesmo arquivo no mesmo checkout e os dois disseram \"gravou\". O que pode ter acontecido?",
-          "opcoes": ["As duas mudanças entraram", "A última gravação apagou a outra, sem erro", "O git avisou o conflito", "O segundo agente esperou o primeiro"],
+          "opcoes": ["As duas mudanças entraram", "A última gravação apagou a outra, sem erro", "O git avisou o conflito", "O segundo agente esperou o primeiro terminar, porque o arquivo estava aberto"],
           "certa": 1,
           "explica": "Ler, pensar e gravar o arquivo inteiro é uma corrida: quem grava por último vence. Nada avisa.",
           "ref": "diagrama",
@@ -189,23 +189,23 @@
         },
         {
           "p": "Por que o conflito no merge de dois worktrees é um sinal bom?",
-          "opcoes": ["Porque é raro", "Porque transforma a perda silenciosa num ponto de decisão visível", "Porque o git resolve sozinho", "Porque apaga as duas versões"],
-          "certa": 1,
+          "opcoes": ["Porque o git resolve sozinho", "Porque é raro", "Porque apaga as duas versões", "Porque transforma a perda silenciosa num ponto de decisão visível"],
+          "certa": 3,
           "explica": "O git para e mostra as duas versões. Quem decide é o orquestrador ou você.",
           "ref": "codigo",
           "cert": true
         },
         {
           "p": "Um subagente com isolation: worktree não acha a mudança que você fez e não commitou. Por quê?",
-          "opcoes": ["Bug", "O worktree dele parte do branch padrão, não do HEAD nem dos arquivos da sua sessão", "Falta .worktreeinclude", "Ele está em read-only"],
-          "certa": 1,
+          "opcoes": ["Bug", "Falta .worktreeinclude", "O worktree dele parte do branch padrão, não do HEAD nem dos arquivos da sua sessão", "Ele está em read-only"],
+          "certa": 2,
           "explica": "Pela doc: a branch parte do branch padrão. Commite antes de delegar, ou passe o diff no pedido.",
           "ref": "passos"
         },
         {
           "p": "Qual sandbox do Codex dar a um revisor que só roda testes e lê?",
-          "opcoes": ["danger-full-access", "workspace-write", "read-only", "Nenhum"],
-          "certa": 2,
+          "opcoes": ["danger-full-access", "workspace-write", "Nenhum", "read-only"],
+          "certa": 3,
           "explica": "read-only não grava nem na pasta. workspace-write é para quem executa; o acesso total a doc só recomenda dentro de uma VM dedicada.",
           "ref": "codigo"
         }

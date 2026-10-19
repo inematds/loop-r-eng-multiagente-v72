@@ -160,15 +160,15 @@
       "perguntas": [
         {
           "p": "O que volta do subagente para a conversa principal?",
-          "opcoes": ["Todo o histórico dele", "Só a resposta final", "Os arquivos que ele leu", "Nada, ele grava em disco"],
-          "certa": 1,
+          "opcoes": ["Os arquivos que ele leu", "Nada, ele grava em disco", "Só a resposta final", "Todo o histórico dele"],
+          "certa": 2,
           "explica": "Só a resposta final volta. É por isso que o formato do retorno, escrito no corpo do arquivo, é a parte mais importante.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "O subagente recebe o histórico da conversa principal?",
-          "opcoes": ["Sim, sempre", "Não: recebe o próprio prompt, a mensagem de tarefa, o CLAUDE.md e o git status; quem herda a conversa é o fork", "Só as últimas 10 mensagens", "Só se tiver model: inherit"],
+          "opcoes": ["Só se o arquivo do agente tiver model: inherit, que faz ele herdar o modelo e a conversa toda", "Não: recebe prompt próprio, a tarefa, o CLAUDE.md e o git status; quem herda é o fork", "Só as últimas 10 mensagens", "Sim, sempre"],
           "certa": 1,
           "explica": "Subagente comum começa limpo. O fork herda a conversa inteira, e com isso perde o isolamento de entrada.",
           "ref": "diagrama",
@@ -176,15 +176,15 @@
         },
         {
           "p": "Um revisor tem tools: Read, Bash, Grep, Glob e a instrução \"não altere arquivos\". Ele consegue gravar?",
-          "opcoes": ["Não, a instrução impede", "Sim: Bash grava; a instrução é pedido, a lista de ferramentas é a trava", "Não, porque não tem Write", "Só se for opus"],
-          "certa": 1,
+          "opcoes": ["Sim: Bash grava; a instrução é pedido, a lista de ferramentas é a trava", "Não, porque não tem Write nem Edit na lista, e sem elas não há como gravar arquivo", "Não, a instrução impede", "Só se for opus"],
+          "certa": 0,
           "explica": "Com Bash ele pode escrever com echo, sed ou rm. Para travar de fato: sandbox (aula 5) ou regra de permissão (curso 4).",
           "ref": "codigo"
         },
         {
           "p": "Quando NÃO vale delegar para um subagente?",
-          "opcoes": ["Busca que gera muito log", "Tarefa com muita ida e volta e fases que dividem o mesmo contexto", "Restringir ferramentas", "Trabalho autocontido que cabe num resumo"],
-          "certa": 1,
+          "opcoes": ["Tarefa com muita ida e volta e fases que dividem o mesmo contexto", "Trabalho autocontido, cujo resultado cabe num resumo curto para a conversa principal", "Restringir ferramentas", "Busca que gera muito log"],
+          "certa": 0,
           "explica": "Ida e volta e contexto compartilhado ficam na conversa principal; o subagente começa do zero e teria de reler tudo.",
           "ref": "diagrama"
         }

@@ -195,12 +195,12 @@
         {
           "p": "¿Por qué el orquestador lee solo la última línea de cada resultado?",
           "opcoes": [
-            "Para ahorrar disco",
-            "Para no traer todo el trabajo de vuelta a su propio contexto: el artefacto queda en el archivo y vuelve una referencia ligera",
-            "Porque el resto siempre es basura",
-            "Porque xargs corta"
+            "Porque el resto de la salida es log de herramienta, que siempre viene truncado y no sirve para nada",
+            "Porque xargs corta",
+            "Para no llenar su propio contexto: el artefacto queda en el archivo, vuelve solo la referencia",
+            "Para ahorrar disco"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Es el mismo principio del subagente: el detalle queda afuera. Cuando lo necesita, el orquestador abre solo el archivo del ítem reprobado.",
           "ref": "diagrama",
           "cert": true
@@ -208,12 +208,12 @@
         {
           "p": "¿Qué faltaba en el pedido que hizo que tres subagentes de Anthropic repitieran la misma búsqueda?",
           "opcoes": [
-            "Un modelo más grande",
-            "Objetivo, formato de salida, fuentes y fronteras claras por subagente",
             "Más subagentes",
+            "Un modelo más grande en el orchestrator, que deduce solo qué debería buscar cada subagente",
+            "Objetivo, formato de salida, fuentes y fronteras claras por subagente",
             "Timeout"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Con un pedido vago, cada subagente interpretó a su manera y el trabajo se repitió. Los cuatro campos dividen el trabajo.",
           "ref": "codigo",
           "cert": true
@@ -222,19 +222,19 @@
           "p": "En la segunda ronda de fanout.sh, ¿quién se ejecuta de nuevo?",
           "opcoes": [
             "Todos",
-            "Solo los ítems cuya última línea no es OK",
+            "Solo los que dieron timeout; los que imprimieron FALHA quedan como están",
             "Ninguno",
-            "Solo los que dieron timeout"
+            "Solo los ítems cuya última línea no es OK"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Lo aprobado no se reprocesa. FALHA y .erro vuelven; es la regla \"solo el reprobado vuelve\" del kit de la clase 1.",
           "ref": "codigo"
         },
         {
           "p": "Dos compañeros de un agent team necesitan modificar el mismo archivo. ¿Qué recomienda la doc?",
           "opcoes": [
-            "Nada, el equipo lo resuelve",
-            "Dividir el trabajo para que cada compañero sea dueño de archivos distintos, porque el equipo no aísla en worktree",
+            "Nada: el equipo se coordina solo y cada compañero trabaja en una copia propia del repositorio",
+            "Dividir el trabajo para que cada compañero sea dueño de archivos distintos",
             "Activar /batch",
             "Usar fork"
           ],

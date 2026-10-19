@@ -209,7 +209,7 @@
             "Both changes went in",
             "The last write erased the other, with no error",
             "Git warned about the conflict",
-            "The second agent waited for the first"
+            "The second agent waited for the first to finish, because the file was open"
           ],
           "certa": 1,
           "explica": "Reading, thinking, and writing the whole file is a race: whoever writes last wins. Nothing warns you.",
@@ -219,12 +219,12 @@
         {
           "p": "Why is a merge conflict between two worktrees a good sign?",
           "opcoes": [
-            "Because it's rare",
-            "Because it turns a silent loss into a visible decision point",
             "Because git resolves it on its own",
-            "Because it erases both versions"
+            "Because it's rare",
+            "Because it erases both versions",
+            "Because it turns a silent loss into a visible decision point"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Git stops and shows both versions. The orchestrator or you decide.",
           "ref": "codigo",
           "cert": true
@@ -233,11 +233,11 @@
           "p": "A subagent with isolation: worktree can't find the change you made and didn't commit. Why?",
           "opcoes": [
             "Bug",
-            "Its worktree starts from the default branch, not from your session's HEAD or files",
             "Missing .worktreeinclude",
+            "Its worktree starts from the default branch, not from your session's HEAD or files",
             "It is read-only"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "Per the docs: the branch starts from the default branch. Commit before delegating, or pass the diff in the request.",
           "ref": "passos"
         },
@@ -246,10 +246,10 @@
           "opcoes": [
             "danger-full-access",
             "workspace-write",
-            "read-only",
-            "None"
+            "None",
+            "read-only"
           ],
-          "certa": 2,
+          "certa": 3,
           "explica": "read-only doesn't write even to the folder. workspace-write is for whoever executes; the docs only recommend full access inside a dedicated VM.",
           "ref": "codigo"
         }

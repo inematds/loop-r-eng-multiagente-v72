@@ -160,31 +160,31 @@
       "perguntas": [
         {
           "p": "Por onde começar o nível de um papel novo?",
-          "opcoes": ["Pelo mais forte, para garantir", "Pelo menor que resolve, subindo só se errar", "Sempre executor", "Pelo mais barato, sem exceção"],
-          "certa": 1,
+          "opcoes": ["Pelo menor que resolve, subindo só se errar", "Sempre executor", "Pelo mais barato, sem exceção", "Pelo mais forte, para garantir, e desce depois se sobrar cota"],
+          "certa": 0,
           "explica": "Regra 1 do ROTEAMENTO.md. Cada chamada consome a cota; subir é decisão com motivo.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "O que o revisor Codex deve receber?",
-          "opcoes": ["Um resumo do que o Claude fez", "O mesmo briefing da tarefa e o artefato real (arquivo, diff, resultado de teste)", "A conversa inteira do Claude", "Só o nome do arquivo"],
-          "certa": 1,
+          "opcoes": ["O mesmo briefing da tarefa e o artefato real (arquivo, diff, teste)", "A conversa inteira do Claude", "Só o nome do arquivo", "Um resumo do que o Claude fez, para o revisor não gastar cota relendo tudo"],
+          "certa": 0,
           "explica": "É a regra única do cartão de rotas. Reconto vago esconde o defeito que o revisor deveria achar.",
           "ref": "passos",
           "cert": true
         },
         {
           "p": "A ponte recebeu o sandbox danger-full-access. O que acontece?",
-          "opcoes": ["Roda com acesso total", "Recusa com saída 2: só read-only e workspace-write passam", "Pede confirmação", "Cai para read-only calada"],
+          "opcoes": ["Roda com acesso total", "Recusa com saída 2: só read-only e workspace-write passam", "Cai para read-only calada e segue rodando sem avisar quem chamou", "Pede confirmação"],
           "certa": 1,
           "explica": "A política está no próprio script: \"sandbox recusado pela POLITICA\" e código 2.",
           "ref": "codigo"
         },
         {
           "p": "O Codex apontou dois achados. O que fazer com eles?",
-          "opcoes": ["Aplicar os dois sem conferir", "Reconciliar cada um: aceito (com prova), rejeitado com evidência ou em aberto com dono", "Ignorar, porque o Claude já tinha aprovado", "Pedir uma terceira opinião"],
-          "certa": 1,
+          "opcoes": ["Pedir uma terceira opinião", "Ignorar, porque o Claude já tinha aprovado", "Aplicar os dois sem conferir", "Reconciliar cada um: aceito (com prova), rejeitado com evidência ou em aberto com dono"],
+          "certa": 3,
           "explica": "Concordância e discordância não provam nada sozinhas. Cada achado ganha um destino, e o aceito se confirma rodando o ensaio de novo.",
           "ref": "codigo"
         }

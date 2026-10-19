@@ -176,30 +176,30 @@
       "perguntas": [
         {
           "p": "Por que o orquestrador lê só a última linha de cada resultado?",
-          "opcoes": ["Para economizar disco", "Para não trazer o trabalho inteiro de volta ao próprio contexto: o artefato fica no arquivo e volta uma referência leve", "Porque o resto é sempre lixo", "Porque o xargs corta"],
-          "certa": 1,
+          "opcoes": ["Porque o resto da saída é log de ferramenta, que vem sempre truncado e não serve para nada", "Porque o xargs corta", "Para não encher o próprio contexto: o artefato fica no arquivo, volta só a referência", "Para economizar disco"],
+          "certa": 2,
           "explica": "É o mesmo princípio do subagente: o detalhe fica fora. Quando precisa, o orquestrador abre só o arquivo do item reprovado.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "O que faltava no pedido que fez três subagentes da Anthropic repetirem a mesma busca?",
-          "opcoes": ["Um modelo maior", "Objetivo, formato de saída, fontes e fronteiras claras por subagente", "Mais subagentes", "Timeout"],
-          "certa": 1,
+          "opcoes": ["Mais subagentes", "Um modelo maior no orquestrador, que deduz sozinho o que cada subagente deveria buscar", "Objetivo, formato de saída, fontes e fronteiras claras por subagente", "Timeout"],
+          "certa": 2,
           "explica": "Com pedido vago, cada subagente interpretou do seu jeito e o trabalho se repetiu. Os quatro campos dividem o trabalho.",
           "ref": "codigo",
           "cert": true
         },
         {
           "p": "Na segunda rodada do fanout.sh, quem roda de novo?",
-          "opcoes": ["Todos", "Só os itens cuja última linha não é OK", "Nenhum", "Só os que deram timeout"],
-          "certa": 1,
+          "opcoes": ["Todos", "Só os que deram timeout; os que imprimiram FALHA ficam como estão", "Nenhum", "Só os itens cuja última linha não é OK"],
+          "certa": 3,
           "explica": "Aprovado não é reprocessado. FALHA e .erro voltam; é a regra \"só o reprovado volta\" do kit da aula 1.",
           "ref": "codigo"
         },
         {
           "p": "Dois colegas de um agent team precisam mexer no mesmo arquivo. O que a doc recomenda?",
-          "opcoes": ["Nada, o time resolve", "Dividir o trabalho para que cada colega seja dono de arquivos diferentes, porque o time não isola em worktree", "Ligar /batch", "Usar fork"],
+          "opcoes": ["Nada: o time coordena sozinho e cada colega trabalha numa cópia própria do repositório", "Dividir o trabalho para que cada colega seja dono de arquivos diferentes", "Ligar /batch", "Usar fork"],
           "certa": 1,
           "explica": "Agent teams não dão worktree a cada colega: editar o mesmo arquivo sobrescreve. Partição por dono, ou isolamento (aula 5).",
           "ref": "passos"

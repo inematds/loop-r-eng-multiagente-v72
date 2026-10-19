@@ -206,12 +206,12 @@
         {
           "p": "According to Anthropic's post (Jun/2025), how many tokens does a multi-agent system use compared to a chat?",
           "opcoes": [
-            "The same",
             "About 4×",
-            "About 15×",
-            "Half, since the work is split"
+            "The same",
+            "Half, since the work is split",
+            "About 15×"
           ],
-          "certa": 2,
+          "certa": 3,
           "explica": "About 15× (and single agents, about 4×), in the data from their research system. Splitting the work doesn't split the context: each agent reads its own.",
           "ref": "passos",
           "cert": true
@@ -219,12 +219,12 @@
         {
           "p": "Sequence 3, parallel 2. What does the matrix say?",
           "opcoes": [
-            "Sequential",
-            "Parallel",
+            "A single agent",
             "Hybrid",
-            "A single agent"
+            "Sequential",
+            "Parallel"
           ],
-          "certa": 2,
+          "certa": 1,
           "explica": "The difference is 1, less than 2: hybrid. The common mistake is picking the bigger side for any difference at all.",
           "ref": "diagrama",
           "cert": true
@@ -232,10 +232,10 @@
         {
           "p": "A migration with a high cost of error scored parallel. What changes?",
           "opcoes": [
-            "Nothing, it runs in parallel",
-            "Planning and review stay at the center, even with parallel execution",
             "It becomes sequential",
-            "It only uses the strongest model"
+            "Plan and review stay centralized; execution remains parallel",
+            "It just swaps every agent's model for the strongest one available",
+            "Nothing: the score already decided, so everything runs in parallel, including the plan"
           ],
           "certa": 1,
           "explica": "A costly error centralizes the plan and the review, whatever the score. Running the independent items can still be parallel.",
@@ -244,12 +244,12 @@
         {
           "p": "Why doesn't the research system's 90.2% gain apply directly to your code?",
           "opcoes": [
-            "Because the number is fake",
-            "Because it was measured on breadth-first research, and code usually has fewer parts that can run in parallel",
             "Because they used an API",
-            "Because Claude Code has no subagents"
+            "Because Claude Code has no subagents, only Anthropic's internal research system",
+            "Because it was measured on breadth-first research, and code has fewer parallel parts",
+            "Because the number is fake"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "The post itself makes this caveat: the gain shows up in questions with many independent directions. In code, dependencies weigh more.",
           "ref": "passos"
         }

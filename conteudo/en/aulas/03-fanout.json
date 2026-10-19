@@ -195,12 +195,12 @@
         {
           "p": "Why does the orchestrator read only the last line of each result?",
           "opcoes": [
-            "To save disk space",
-            "So it doesn't pull the whole job back into its own context: the artifact stays in the file and only a light reference comes back",
-            "Because the rest is always junk",
-            "Because xargs cuts it off"
+            "Because the rest of the output is tool log, which always comes truncated and is useless",
+            "Because xargs cuts it off",
+            "To avoid filling its own context: the artifact stays in the file, only the reference comes back",
+            "To save disk space"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "It's the same principle as the subagent: the detail stays out. When it needs to, the orchestrator opens only the file of the failed item.",
           "ref": "diagrama",
           "cert": true
@@ -208,12 +208,12 @@
         {
           "p": "What was missing from the request that made three Anthropic subagents repeat the same search?",
           "opcoes": [
-            "A bigger model",
-            "Objective, output format, sources, and clear boundaries for each subagent",
             "More subagents",
+            "A bigger model in the orchestrator, which deduces on its own what each subagent should look for",
+            "Objective, output format, sources, and clear boundaries for each subagent",
             "Timeout"
           ],
-          "certa": 1,
+          "certa": 2,
           "explica": "With a vague request, each subagent interpreted it in its own way and the work was duplicated. The four fields split up the work.",
           "ref": "codigo",
           "cert": true
@@ -222,19 +222,19 @@
           "p": "In the second round of fanout.sh, who runs again?",
           "opcoes": [
             "Everyone",
-            "Only the items whose last line is not OK",
+            "Only the ones that hit the timeout; the ones that printed FALHA stay as they are",
             "None",
-            "Only the ones that hit the timeout"
+            "Only the items whose last line is not OK"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Approved items are not reprocessed. FALHA and .erro come back; this is the rule \"only the failed one comes back\" from the lesson 1 kit.",
           "ref": "codigo"
         },
         {
           "p": "Two teammates in an agent team need to edit the same file. What does the doc recommend?",
           "opcoes": [
-            "Nothing, the team sorts it out",
-            "Split the work so each teammate owns different files, because the team does not isolate in a worktree",
+            "Nothing: the team coordinates itself and each teammate works on its own copy of the repository",
+            "Split the work so each teammate owns different files",
             "Turn on /batch",
             "Use fork"
           ],

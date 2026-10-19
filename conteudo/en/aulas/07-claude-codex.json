@@ -173,12 +173,12 @@
         {
           "p": "Where should you start the level for a new role?",
           "opcoes": [
-            "With the strongest, to be safe",
             "With the smallest that works, moving up only if it gets it wrong",
             "Always executor",
-            "With the cheapest, no exceptions"
+            "With the cheapest, no exceptions",
+            "With the strongest one, to be safe, and step down later if quota is left over"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "Rule 1 of ROTEAMENTO.md. Each call uses up quota; moving up is a decision with a reason.",
           "ref": "diagrama",
           "cert": true
@@ -186,12 +186,12 @@
         {
           "p": "What should the Codex reviewer receive?",
           "opcoes": [
-            "A summary of what Claude did",
-            "The same task briefing and the real artifact (file, diff, test result)",
+            "The same task briefing and the real artifact (file, diff, test)",
             "Claude's entire conversation",
-            "Only the file name"
+            "Only the file name",
+            "A summary of what Claude did, so the reviewer doesn't spend quota rereading everything"
           ],
-          "certa": 1,
+          "certa": 0,
           "explica": "It is the single rule on the route card. A vague retelling hides the defect the reviewer should find.",
           "ref": "passos",
           "cert": true
@@ -201,8 +201,8 @@
           "opcoes": [
             "It runs with full access",
             "It refuses with exit 2: only read-only and workspace-write pass",
-            "It asks for confirmation",
-            "It quietly falls back to read-only"
+            "It silently falls back to read-only and keeps running without telling the caller",
+            "It asks for confirmation"
           ],
           "certa": 1,
           "explica": "The policy is in the script itself: \"sandbox recusado pela POLITICA\" and code 2.",
@@ -211,12 +211,12 @@
         {
           "p": "Codex pointed out two findings. What do you do with them?",
           "opcoes": [
-            "Apply both without checking",
-            "Reconcile each one: aceito (with proof), rejeitado with evidence, or aberto with an owner",
+            "Ask for a third opinion",
             "Ignore them, because Claude had already approved",
-            "Ask for a third opinion"
+            "Apply both without checking",
+            "Reconcile each one: aceito (with proof), rejeitado with evidence, or aberto with an owner"
           ],
-          "certa": 1,
+          "certa": 3,
           "explica": "Agreement and disagreement prove nothing on their own. Each finding gets an outcome, and the aceito one is confirmed by running the rehearsal again.",
           "ref": "codigo"
         }

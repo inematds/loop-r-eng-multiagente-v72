@@ -174,7 +174,7 @@
       "perguntas": [
         {
           "p": "O gerador escreveu \"Pronto! criado conforme pedido\". O que isso decide?",
-          "opcoes": ["Que acabou", "Nada: quem decide é o avaliador, olhando o artefato", "Que a rodada foi boa", "Que pode pular o avaliador"],
+          "opcoes": ["Que acabou", "Nada: quem decide é o avaliador, olhando o artefato", "Que pode pular o avaliador", "Que a rodada foi boa"],
           "certa": 1,
           "explica": "No ensaio, a frase veio junto com um arquivo errado. O relato fica no log; a decisão é do verificar.mjs.",
           "ref": "diagrama",
@@ -182,23 +182,23 @@
         },
         {
           "p": "O que o avaliador deve receber?",
-          "opcoes": ["O resumo do gerador", "O artefato real: arquivo, diff ou saída de teste, mais os critérios", "A conversa inteira", "Só o pedido"],
-          "certa": 1,
+          "opcoes": ["O artefato real: arquivo, diff ou saída de teste, mais os critérios", "A conversa inteira", "O resumo do gerador, que já diz o que foi feito e economiza contexto do avaliador", "Só o pedido"],
+          "certa": 0,
           "explica": "Reconto vago esconde o defeito. A regra do kit agente-claude-codex é dar ao segundo agente o mesmo briefing e o artefato.",
           "ref": "diagrama",
           "cert": true
         },
         {
           "p": "O gerador saiu com erro, mas um saudacao.txt certo de antes estava em disco. O que o script deve fazer?",
-          "opcoes": ["Avaliar e aprovar", "Reprovar a rodada sem avaliar", "Apagar o goal", "Parar com 0"],
-          "certa": 1,
+          "opcoes": ["Reprovar a rodada sem avaliar", "Avaliar o arquivo que está em disco e aprovar se ele estiver certo", "Apagar o goal", "Parar com 0"],
+          "certa": 0,
           "explica": "Avaliar a sobra aprovaria trabalho que esta rodada não fez. Foi o defeito apontado pelo Codex e corrigido no script.",
           "ref": "codigo"
         },
         {
           "p": "Dois modelos diferentes concordaram que o trabalho está certo. Isso prova?",
-          "opcoes": ["Sim, dois votos bastam", "Não: podem dividir a mesma suposição errada; critério por código vem primeiro", "Sim, se forem de empresas diferentes", "Só se for o modelo topo"],
-          "certa": 1,
+          "opcoes": ["Não: podem dividir a mesma suposição errada; critério por código vem primeiro", "Sim, dois votos bastam", "Sim, se forem de empresas diferentes", "Só se for o modelo topo"],
+          "certa": 0,
           "explica": "Concordância ajuda, mas não é prova independente. O critério que roda e imprime a saída esperada é a prova.",
           "ref": "diagrama"
         }
