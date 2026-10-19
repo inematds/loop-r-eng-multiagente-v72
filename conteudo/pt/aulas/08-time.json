@@ -112,7 +112,7 @@
           "min": "45 min",
           "dias": 1,
           "texto": "Escolha uma tarefa pequena do seu projeto. Escreva o goal com 2 ou 3 critérios e faça commit dele. O executor roda pelo gera-avalia.sh num worktree (git worktree add) e o revisor Codex lê o diff pela ponte. Reconcilie os achados no revisao.md.",
-          "pronto": "<code>./gera-avalia.sh goal.md \"[pedido]\"</code> termina em <code>→ APROVADO</code> e <code>saída: 0</code>; a última linha da revisão começa com <code>APROVADO</code> ou <code>FALTA:</code>; <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
+          "pronto": "<code>./gera-avalia.sh goal.md \"[pedido]\"</code> termina em <code>→ APROVADO</code> e <code>saída: 0</code>; <code>tail -1 revisao-codex.txt | grep -cE '^-? ?(APROVADO|FALTA:)'</code> → <code>1</code>; <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
         }
       ]
     },

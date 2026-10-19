@@ -76,12 +76,12 @@
     {
       "tipo": "codigo",
       "titulo": "Ensayo: la escritura perdida y el worktree",
-      "sub": "Repositorio desechable y dos agentes falsos que leen, esperan 2 s y escriben el archivo completo.",
+      "sub": "Repositorio desechable y dos agentes falsos que leen, piensan (A 2 s, B 1 s) y escriben el archivo completo.",
       "blocos": [
         {
           "rot": "Terminal · ensayo sin cuota",
           "icone": "terminal",
-          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# um \"agente\" lê o arquivo, pensa 2 s e grava o arquivo inteiro (como a ferramenta Write)\nagente() { c=$(cat \"$1/config.txt\"); sleep 2; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A & agente . 's/versao = 1/versao = 2/' B & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A & agente ../wt-b 's/versao = 1/versao = 2/' B & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
+          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# un \"agente\" lee el archivo, piensa $4 s y escribe el archivo completo (como la herramienta Write); A piensa más que B\nagente() { c=$(cat \"$1/config.txt\"); sleep \"$4\"; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A 2 & agente . 's/versao = 1/versao = 2/' B 1 & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A 2 & agente ../wt-b 's/versao = 1/versao = 2/' B 1 & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
         }
       ],
       "saida": {
@@ -89,7 +89,7 @@
         "abas": [
           {
             "rot": "Salida capturada (19/10/2026)",
-            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nA gravou\nB gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>En A, los dos dijeron \"gravou\" y la versión 2 desapareció. En B, los dos cambios entraron. El orden de \"A gravou\" y \"B gravou\" varía de una ronda a otra; el resultado no.</p>"
+            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nB gravou\nA gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>En A, los dos dijeron \"gravou\", pero solo una de las dos modificaciones sobrevivió: A leyó el archivo antes de que B escribiera y, como piensa más, escribió encima, y la versión 2 desapareció. En B, las dos modificaciones entraron.</p><p>Las esperas diferentes (A 2 s, B 1 s) fijan el orden para que el ensayo dé siempre el mismo resultado (18 de 18 rondas iguales el 19/10/2026). Con esperas iguales, quien escribe al final cambia en cada ronda, pero nunca quedan las dos modificaciones.</p>"
           },
           {
             "rot": "Conflicto: la buena señal",
@@ -181,7 +181,7 @@
           "titulo": "E9 · La escritura perdida",
           "min": "10 min",
           "texto": "Corre el ensayo de los dos agentes.",
-          "pronto": "en A, <code>cat config.txt</code> muestra <code>versao = 1</code> (el cambio de B desapareció); en B, muestra <code>versao = 2</code> y <code>cor = verde</code>; la última línea es <code>3</code>."
+          "pronto": "en A, solo uno de los dos cambios sobrevive: el <code>cat config.txt</code> muestra <code>versao = 1</code> y <code>cor = verde</code> (el cambio de B desapareció); en B, muestra <code>versao = 2</code> y <code>cor = verde</code>; la última línea es <code>3</code>."
         },
         {
           "id": "e2",
@@ -294,7 +294,7 @@
         },
         {
           "t": "Curso 4 de la formación: sandbox de red y de archivos como seguridad",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/es/",
           "icone": "escudo"
         }
       ]

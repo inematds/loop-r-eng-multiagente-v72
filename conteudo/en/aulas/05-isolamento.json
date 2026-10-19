@@ -76,12 +76,12 @@
     {
       "tipo": "codigo",
       "titulo": "Rehearsal: the lost write and the worktree",
-      "sub": "A disposable repository and two fake agents that read, wait 2 s, and write the whole file.",
+      "sub": "A throwaway repository and two fake agents that read, think (A 2 s, B 1 s), and write the whole file.",
       "blocos": [
         {
           "rot": "Terminal · no-quota rehearsal",
           "icone": "terminal",
-          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# um \"agente\" lê o arquivo, pensa 2 s e grava o arquivo inteiro (como a ferramenta Write)\nagente() { c=$(cat \"$1/config.txt\"); sleep 2; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A & agente . 's/versao = 1/versao = 2/' B & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A & agente ../wt-b 's/versao = 1/versao = 2/' B & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
+          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# an \"agent\" reads the file, thinks for $4 s and writes the whole file (like the Write tool); A thinks longer than B\nagente() { c=$(cat \"$1/config.txt\"); sleep \"$4\"; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A 2 & agente . 's/versao = 1/versao = 2/' B 1 & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A 2 & agente ../wt-b 's/versao = 1/versao = 2/' B 1 & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
         }
       ],
       "saida": {
@@ -89,7 +89,7 @@
         "abas": [
           {
             "rot": "Captured output (10/19/2026)",
-            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nA gravou\nB gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>In A, both said \"gravou\" and version 2 vanished. In B, both changes went in. The order of \"A gravou\" and \"B gravou\" varies from one round to the next; the result doesn't.</p>"
+            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nB gravou\nA gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>In A, both said \"gravou\", but only one of the two changes survived: A read the file before B wrote and, since it thinks longer, wrote over it, and version 2 disappeared. In B, both changes made it in.</p><p>The different waits (A 2 s, B 1 s) fix the order so the rehearsal always gives the same result (18 of 18 rounds identical on 10/19/2026). With equal waits, whoever writes last changes from round to round, but you never end up with both changes.</p>"
           },
           {
             "rot": "Conflict: the good sign",
@@ -181,7 +181,7 @@
           "titulo": "E9 · The lost write",
           "min": "10 min",
           "texto": "Run the two-agent rehearsal.",
-          "pronto": "in A, <code>cat config.txt</code> shows <code>versao = 1</code> (B's change is gone); in B, it shows <code>versao = 2</code> and <code>cor = verde</code>; the last line is <code>3</code>."
+          "pronto": "in A, only one of the two changes survives: <code>cat config.txt</code> shows <code>versao = 1</code> and <code>cor = verde</code> (B's change disappeared); in B, it shows <code>versao = 2</code> and <code>cor = verde</code>; the last line is <code>3</code>."
         },
         {
           "id": "e2",
@@ -294,7 +294,7 @@
         },
         {
           "t": "Course 4 of the track: network and file sandboxing as security",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/en/",
           "icone": "escudo"
         }
       ]

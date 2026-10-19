@@ -18,7 +18,7 @@
   "rodape": "INEMA.CLUB · open and free content · INEMA Learning v7.2 format · LOOP-R Engineering Track, course 3 of 6 · <a href=\"https://eventos.inema.pro/loop-r-engenharia/\">eventos.inema.pro/loop-r-engenharia</a> · <a href=\"https://github.com/inematds/inema-agent-runtime\">inema-agent-runtime on GitHub</a> · <a href=\"https://inema.club/\">inema.club</a>",
   "videos": {
     "claude-codex": {
-      "titulo": "Claude and Codex with the same context",
+      "titulo": "Claude and Codex with the same context (video in Portuguese)",
       "duracao": "7 min 36 s",
       "mp4": "https://github.com/inematds/agente-claude-codex/releases/download/video-v1.0.0/contexto-portatil-pt-16x9.mp4",
       "vtt": "assets/vtt/claude-codex.vtt",
@@ -63,48 +63,42 @@
           "rot": "Course 0",
           "t": "Foundation: anatomy of the loop",
           "l": "The five pieces, the harness, the loop engines, LOOP-R, done criterion from 0 to 4, and caps.",
-          "href": "https://inematds.github.io/loop-r-eng-base-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-base-v72/en/",
           "img": "assets/img/cursos/base.jpg"
         },
         {
           "rot": "Course 1",
           "t": "Verification and evals",
           "l": "Separate, skeptical evaluator, frozen tests, reward hacking, gold set, and calibrated judge.",
-          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/en/",
           "img": "assets/img/cursos/verificacao.jpg"
         },
         {
           "rot": "Course 2",
           "t": "Long-running execution",
           "l": "The seven-file kit, goal.md level 3+, context in bands, handoff, headless loop, and measurement.",
-          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/en/",
           "img": "assets/img/cursos/execucao-longa.jpg"
         },
         {
           "rot": "Course 3 · you are here",
           "t": "Multi-agent and orchestration",
           "l": "When not to use it, subagents, generator × evaluator, worktrees, queues, and the Claude + Codex team.",
-          "href": "https://inematds.github.io/loop-r-eng-multiagente-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-multiagente-v72/en/",
           "img": "assets/img/cursos/multiagente.jpg"
         },
         {
           "rot": "Course 4",
           "t": "Autonomous loop security",
           "l": "Lethal trifecta, Rule of Two, injection through read content, guard hooks, and sandbox.",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/en/",
           "img": "assets/img/cursos/seguranca.jpg"
         },
         {
           "rot": "Course 5",
           "t": "The loop that learns",
           "l": "A hypothesis with a number, an experiment, a promotion and a rollback, lessons learned, and the risk of optimizing against the meter.",
-          "href": "https://inematds.github.io/loop-r-eng-aprende-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-aprende-v72/en/",
           "img": "assets/img/cursos/aprende.jpg"
         }
       ]
@@ -132,8 +126,8 @@
       {
         "t": "Before you start",
         "itens": [
-          "Linux or macOS with git, bash, Python 3, and Node 20+; Claude Code and Codex CLI signed in through your subscription.",
-          "The rehearsals use a fake agent and don't spend quota. The three real calls in the course are small.",
+          "Linux with git, bash, Python 3, and Node 20+ (on macOS, the rehearsals need <code>xargs -d</code>, <code>flock</code>, and <code>timeout</code>: install coreutils, findutils, and flock through Homebrew); Claude Code and Codex CLI signed in through your subscription.",
+          "The rehearsals use a fake agent and don't spend quota. The course's real calls (lessons 2, 3, 4, 7, and 8) are small.",
           "Recommended: courses 0 (Base), 1 (Verification), and 2 (Long runs) of the track."
         ]
       }

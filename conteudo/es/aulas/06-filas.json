@@ -289,7 +289,7 @@
       "links": [
         {
           "t": "Curso Filas (del-chat-al-agente): la cola durable con inemaccbot",
-          "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/",
+          "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/es/",
           "icone": "fila"
         },
         {
@@ -304,7 +304,7 @@
         },
         {
           "t": "Curso 4 de la formación: hooks como guardia",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/es/",
           "icone": "escudo"
         }
       ]

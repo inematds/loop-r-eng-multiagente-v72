@@ -135,7 +135,7 @@
           "titulo": "planner",
           "sub": "read-only",
           "texto": [
-            "Returns up to 5 steps and the criteria in the comando → saída esperada format, plus the risks that need confirmation.",
+            "Returns up to 5 steps and the criteria in the command → expected output format, plus the risks that need confirmation.",
             "In the kit, it runs at the topo level; tools Read, Grep, Glob."
           ]
         },
@@ -266,7 +266,7 @@
       "links": [
         {
           "t": "Course 1 of the track: Verification and evals (how to write the evaluator)",
-          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/en/",
           "icone": "check"
         },
         {

@@ -124,7 +124,7 @@
           "min": "45 min",
           "dias": 1,
           "texto": "Elige una tarea pequeña de tu proyecto. Escribe el goal con 2 o 3 criterios y haz commit de él. El ejecutor corre por gera-avalia.sh en un worktree (git worktree add) y el revisor Codex lee el diff por el puente. Concilia los hallazgos en el revisao.md.",
-          "pronto": "<code>./gera-avalia.sh goal.md \"[pedido]\"</code> termina en <code>→ APROVADO</code> y <code>saída: 0</code>; la última línea de la revisión empieza con <code>APROVADO</code> o <code>FALTA:</code>; <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> es igual al número de hallazgos."
+          "pronto": "<code>./gera-avalia.sh goal.md \"[pedido]\"</code> termina en <code>→ APROVADO</code> y <code>saída: 0</code>; <code>tail -1 revisao-codex.txt | grep -cE '^-? ?(APROVADO|FALTA:)'</code> → <code>1</code>; <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> es igual al número de hallazgos."
         }
       ]
     },
@@ -314,7 +314,7 @@
       "links": [
         {
           "t": "Próximo curso de la formación: Seguridad del loop autónomo (curso 4)",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/es/",
           "icone": "seta"
         },
         {

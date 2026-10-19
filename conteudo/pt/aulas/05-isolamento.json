@@ -55,12 +55,12 @@
     {
       "tipo": "codigo",
       "titulo": "Ensaio: a gravação perdida e o worktree",
-      "sub": "Repositório descartável e dois agentes falsos que leem, esperam 2 s e gravam o arquivo inteiro.",
+      "sub": "Repositório descartável e dois agentes falsos que leem, pensam (A 2 s, B 1 s) e gravam o arquivo inteiro.",
       "blocos": [
         {
           "rot": "Terminal · ensaio sem cota",
           "icone": "terminal",
-          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# um \"agente\" lê o arquivo, pensa 2 s e grava o arquivo inteiro (como a ferramenta Write)\nagente() { c=$(cat \"$1/config.txt\"); sleep 2; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A & agente . 's/versao = 1/versao = 2/' B & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A & agente ../wt-b 's/versao = 1/versao = 2/' B & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
+          "conteudo": "E=${TMPDIR:-/tmp}/ensaio-multi/wt; rm -rf $E && mkdir -p $E && cd $E\ngit init -q repo && cd repo && git config user.name ensaio && git config user.email ensaio@local\nprintf 'versao = 1\\nnome = treino\\ncor = azul\\n' > config.txt && git add -A && git commit -qm base\n# um \"agente\" lê o arquivo, pensa $4 s e grava o arquivo inteiro (como a ferramenta Write); A pensa mais que B\nagente() { c=$(cat \"$1/config.txt\"); sleep \"$4\"; printf '%s\\n' \"$c\" | sed \"$2\" > \"$1/config.txt\"; echo \"$3 gravou\"; }\n\necho \"## A) dois agentes no MESMO checkout\"\nagente . 's/azul/verde/' A 2 & agente . 's/versao = 1/versao = 2/' B 1 & wait\ncat config.txt\ngit checkout -q config.txt\n\necho \"## B) um worktree para cada agente\"\ngit worktree add -q ../wt-a -b agente-a && git worktree add -q ../wt-b -b agente-b\nagente ../wt-a 's/azul/verde/' A 2 & agente ../wt-b 's/versao = 1/versao = 2/' B 1 & wait\ngit -C ../wt-a commit -qam \"A: cor\" && git -C ../wt-b commit -qam \"B: versão\"\ngit merge -q agente-a && git merge -q --no-edit agente-b && cat config.txt\ngit worktree list | wc -l"
         }
       ],
       "saida": {
@@ -68,7 +68,7 @@
         "abas": [
           {
             "rot": "Saída capturada (19/10/2026)",
-            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nA gravou\nB gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>Em A, os dois disseram \"gravou\" e a versão 2 sumiu. Em B, as duas mudanças entraram. A ordem de \"A gravou\" e \"B gravou\" varia de uma rodada para outra; o resultado não.</p>"
+            "html": "<pre>## A) dois agentes no MESMO checkout\nB gravou\nA gravou\nversao = 1\nnome = treino\ncor = verde\n## B) um worktree para cada agente\nB gravou\nA gravou\nAuto-merging config.txt\nversao = 2\nnome = treino\ncor = verde\n3</pre><p>Em A, os dois disseram \"gravou\", mas só uma das duas mudanças sobreviveu: A leu o arquivo antes de B gravar e, como pensa mais, gravou por cima, e a versão 2 sumiu. Em B, as duas mudanças entraram.</p><p>As esperas diferentes (A 2 s, B 1 s) fixam a ordem para o ensaio dar sempre o mesmo resultado (18 de 18 rodadas iguais em 19/10/2026). Com esperas iguais, quem grava por último muda a cada rodada, mas nunca sobram as duas mudanças.</p>"
           },
           {
             "rot": "Conflito: o sinal bom",
@@ -157,7 +157,7 @@
           "titulo": "E9 · A gravação perdida",
           "min": "10 min",
           "texto": "Rode o ensaio dos dois agentes.",
-          "pronto": "em A, <code>cat config.txt</code> mostra <code>versao = 1</code> (a mudança de B sumiu); em B, mostra <code>versao = 2</code> e <code>cor = verde</code>; a última linha é <code>3</code>."
+          "pronto": "em A, só uma das duas mudanças sobrevive: o <code>cat config.txt</code> mostra <code>versao = 1</code> e <code>cor = verde</code> (a mudança de B sumiu); em B, mostra <code>versao = 2</code> e <code>cor = verde</code>; a última linha é <code>3</code>."
         },
         {
           "id": "e2",

@@ -162,7 +162,7 @@
           "titulo": "E16 · Cross-review and reconciliation",
           "min": "20 min",
           "texto": "Run the bridge for real on gera-avalia.sh (or on a diff of your own: git diff main...HEAD &gt; diff.txt and ask for a review of diff.txt). Write revisao.md with one line per finding.",
-          "pronto": "the last line of <code>revisao-codex.txt</code> starts with <code>APROVADO</code> or <code>FALTA:</code>, and <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> equals the number of findings."
+          "pronto": "<code>tail -1 revisao-codex.txt | grep -cE '^-? ?(APROVADO|FALTA:)'</code> → <code>1</code> (the last line carries the verdict; Codex sometimes puts \"- \" in front), and <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> equals the number of findings."
         }
       ]
     },

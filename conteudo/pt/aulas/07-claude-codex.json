@@ -150,7 +150,7 @@
           "titulo": "E16 · Revisão cruzada e reconciliação",
           "min": "20 min",
           "texto": "Rode a ponte de verdade sobre o gera-avalia.sh (ou sobre um diff seu: git diff main...HEAD &gt; diff.txt e peça a revisão do diff.txt). Escreva revisao.md com uma linha por achado.",
-          "pronto": "a última linha de <code>revisao-codex.txt</code> começa com <code>APROVADO</code> ou <code>FALTA:</code>, e <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
+          "pronto": "<code>tail -1 revisao-codex.txt | grep -cE '^-? ?(APROVADO|FALTA:)'</code> → <code>1</code> (a última linha traz o veredito; o Codex às vezes põe \"- \" na frente), e <code>grep -cE \"^(aceito|rejeitado|aberto):\" revisao.md</code> é igual ao número de achados."
         }
       ]
     },

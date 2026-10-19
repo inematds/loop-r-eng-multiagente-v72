@@ -149,7 +149,7 @@
           },
           {
             "rot": "Gotcha: the kit's reviewer writes",
-            "html": "<p>The checker marked <code>revisor · … · escreve: sim</code>. The kit file says \"Não altere arquivos\", but the tool list includes <code>Bash</code>, and Bash writes. The instruction is a request to the model; the tool list is the lock.</p><pre>revisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim</pre><p>The reviewer needs Bash to run the criteria. To keep it from actually writing, the way out is sandbox (lesson 5) or a permission rule; guarding against deleting and writing is covered in <a href=\"https://inematds.github.io/loop-r-eng-seguranca-v72/\">course 4</a>. And the real call without <code>&lt; /dev/null</code> waits 3 s for stdin and warns: <code>Warning: no stdin data received in 3s</code>.</p>"
+            "html": "<p>The checker marked <code>revisor · … · escreve: sim</code>. The kit file says \"Não altere arquivos\", but the tool list includes <code>Bash</code>, and Bash writes. The instruction is a request to the model; the tool list is the lock.</p><pre>revisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim</pre><p>The reviewer needs Bash to run the criteria. To keep it from actually writing, the way out is sandbox (lesson 5) or a permission rule; guarding against deleting and writing is covered in <a href=\"https://inematds.github.io/loop-r-eng-seguranca-v72/en/\">course 4</a>. And the real call without <code>&lt; /dev/null</code> waits 3 s for stdin and warns: <code>Warning: no stdin data received in 3s</code>.</p>"
           }
         ]
       }
@@ -270,7 +270,7 @@
         },
         {
           "t": "Course 2 of the track: the cost of context in a long session",
-          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/en/",
           "icone": "seta"
         }
       ]

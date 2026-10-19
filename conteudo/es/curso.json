@@ -18,7 +18,7 @@
   "rodape": "INEMA.CLUB · contenido abierto y gratuito · formato INEMA Learning v7.2 · Formación LOOP-R Ingeniería, curso 3 de 6 · <a href=\"https://eventos.inema.pro/loop-r-engenharia/\">eventos.inema.pro/loop-r-engenharia</a> · <a href=\"https://github.com/inematds/inema-agent-runtime\">inema-agent-runtime en GitHub</a> · <a href=\"https://inema.club/\">inema.club</a>",
   "videos": {
     "claude-codex": {
-      "titulo": "Claude y Codex con el mismo contexto",
+      "titulo": "Claude y Codex con el mismo contexto (video en portugués)",
       "duracao": "7 min 36 s",
       "mp4": "https://github.com/inematds/agente-claude-codex/releases/download/video-v1.0.0/contexto-portatil-pt-16x9.mp4",
       "vtt": "assets/vtt/claude-codex.vtt",
@@ -63,48 +63,42 @@
           "rot": "Curso 0",
           "t": "Base: anatomía del loop",
           "l": "Las cinco piezas, el harness, los motores de loop, el LOOP-R, criterio de terminado de 0 a 4 y topes.",
-          "href": "https://inematds.github.io/loop-r-eng-base-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-base-v72/es/",
           "img": "assets/img/cursos/base.jpg"
         },
         {
           "rot": "Curso 1",
           "t": "Verificación y evals",
           "l": "Evaluador separado y escéptico, tests congelados, reward hacking, conjunto de oro y juez calibrado.",
-          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/es/",
           "img": "assets/img/cursos/verificacao.jpg"
         },
         {
           "rot": "Curso 2",
           "t": "Ejecución larga",
           "l": "El kit de siete archivos, goal.md nivel 3+, contexto en franjas, handoff, loop headless y medición.",
-          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/es/",
           "img": "assets/img/cursos/execucao-longa.jpg"
         },
         {
           "rot": "Curso 3 · estás aquí",
           "t": "Multiagente y orquestación",
           "l": "Cuándo no usarlo, subagentes, generador × evaluador, worktrees, colas y el equipo Claude + Codex.",
-          "href": "https://inematds.github.io/loop-r-eng-multiagente-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-multiagente-v72/es/",
           "img": "assets/img/cursos/multiagente.jpg"
         },
         {
           "rot": "Curso 4",
           "t": "Seguridad del loop autónomo",
           "l": "Tríada letal, Regla de Dos, inyección por el contenido leído, hooks de guardia y sandbox.",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/es/",
           "img": "assets/img/cursos/seguranca.jpg"
         },
         {
           "rot": "Curso 5",
           "t": "El loop que aprende",
           "l": "Hipótesis con número, experimento, promoción y rollback, lecciones y el riesgo de optimizar contra el medidor.",
-          "href": "https://inematds.github.io/loop-r-eng-aprende-v72/",
-          "href_idioma": true,
+          "href": "https://inematds.github.io/loop-r-eng-aprende-v72/es/",
           "img": "assets/img/cursos/aprende.jpg"
         }
       ]
@@ -132,8 +126,8 @@
       {
         "t": "Antes de empezar",
         "itens": [
-          "Linux o macOS con git, bash, Python 3 y Node 20+; Claude Code y Codex CLI entrando por tu suscripción.",
-          "Los ensayos usan un agente falso y no gastan cuota. Las tres llamadas reales del curso son pequeñas.",
+          "Linux con git, bash, Python 3 y Node 20+ (en macOS, los ensayos piden <code>xargs -d</code>, <code>flock</code> y <code>timeout</code>: instala coreutils, findutils y flock con Homebrew); Claude Code y Codex CLI entrando por tu suscripción.",
+          "Los ensayos usan un agente falso y no gastan cuota. Las llamadas reales del curso (clases 2, 3, 4, 7 y 8) son pequeñas.",
           "Recomendado: los cursos 0 (Base), 1 (Verificación) y 2 (Ejecución larga) de la formación."
         ]
       }

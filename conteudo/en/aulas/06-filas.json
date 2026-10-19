@@ -289,7 +289,7 @@
       "links": [
         {
           "t": "Queues course (do-chat-ao-agente): the durable queue with inemaccbot",
-          "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/",
+          "href": "https://inematds.github.io/do-chat-ao-agente-filas-v72/en/",
           "icone": "fila"
         },
         {
@@ -304,7 +304,7 @@
         },
         {
           "t": "Course 4 of the track: hooks as a guard",
-          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/en/",
           "icone": "escudo"
         }
       ]

@@ -64,7 +64,6 @@
           "t": "Base: anatomia do loop",
           "l": "As cinco peças, o harness, os motores de loop, o LOOP-R, critério de pronto de 0 a 4 e tetos.",
           "href": "https://inematds.github.io/loop-r-eng-base-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/base.jpg"
         },
         {
@@ -72,7 +71,6 @@
           "t": "Verificação e evals",
           "l": "Avaliador separado e cético, testes congelados, reward hacking, conjunto de ouro e juiz calibrado.",
           "href": "https://inematds.github.io/loop-r-eng-verificacao-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/verificacao.jpg"
         },
         {
@@ -80,7 +78,6 @@
           "t": "Execução longa",
           "l": "O kit de sete arquivos, goal.md nível 3+, contexto em faixas, handoff, loop headless e medição.",
           "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/execucao-longa.jpg"
         },
         {
@@ -88,7 +85,6 @@
           "t": "Multiagente e orquestração",
           "l": "Quando não usar, subagentes, gerador × avaliador, worktrees, filas e o time Claude + Codex.",
           "href": "https://inematds.github.io/loop-r-eng-multiagente-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/multiagente.jpg"
         },
         {
@@ -96,7 +92,6 @@
           "t": "Segurança do loop autônomo",
           "l": "Tríade letal, Regra de Dois, injeção pelo conteúdo lido, hooks de guarda e sandbox.",
           "href": "https://inematds.github.io/loop-r-eng-seguranca-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/seguranca.jpg"
         },
         {
@@ -104,7 +99,6 @@
           "t": "O loop que aprende",
           "l": "Hipótese com número, experimento, promoção e rollback, lições e o risco de otimizar contra o medidor.",
           "href": "https://inematds.github.io/loop-r-eng-aprende-v72/",
-          "href_idioma": true,
           "img": "assets/img/cursos/aprende.jpg"
         }
       ]
@@ -132,8 +126,8 @@
       {
         "t": "Antes de começar",
         "itens": [
-          "Linux ou macOS com git, bash, Python 3 e Node 20+; Claude Code e Codex CLI entrando pela sua assinatura.",
-          "Os ensaios usam agente falso e não gastam cota. As três chamadas reais do curso são pequenas.",
+          "Linux com git, bash, Python 3 e Node 20+ (no macOS, os ensaios pedem <code>xargs -d</code>, <code>flock</code> e <code>timeout</code>: instale coreutils, findutils e flock pelo Homebrew); Claude Code e Codex CLI entrando pela sua assinatura.",
+          "Os ensaios usam agente falso e não gastam cota. As chamadas reais do curso (aulas 2, 3, 4, 7 e 8) são pequenas.",
           "Recomendado: os cursos 0 (Base), 1 (Verificação) e 2 (Execução longa) da formação."
         ]
       }

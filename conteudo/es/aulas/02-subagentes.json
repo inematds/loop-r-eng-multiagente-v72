@@ -149,7 +149,7 @@
           },
           {
             "rot": "Trampa: el revisor del kit escribe",
-            "html": "<p>El conferidor marcó <code>revisor · … · escreve: sim</code>. El archivo del kit dice \"Não altere arquivos\", pero la lista de herramientas incluye <code>Bash</code>, y Bash graba. La instrucción es un pedido al modelo; la lista de herramientas es el seguro.</p><pre>revisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim</pre><p>El revisor necesita Bash para ejecutar los criterios. Para que no grabe de verdad, la salida es sandbox (clase 5) o una regla de permiso; la protección contra borrar y escribir es tema del <a href=\"https://inematds.github.io/loop-r-eng-seguranca-v72/\">curso 4</a>. Y la llamada real sin <code>&lt; /dev/null</code> espera 3 s por el stdin y avisa: <code>Warning: no stdin data received in 3s</code>.</p>"
+            "html": "<p>El verificador marcó <code>revisor · … · escreve: sim</code>. El archivo del kit dice \"Não altere arquivos\", pero la lista de herramientas incluye <code>Bash</code>, y Bash graba. La instrucción es un pedido al modelo; la lista de herramientas es el seguro.</p><pre>revisor · tools: Read, Bash, Grep, Glob · model: haiku · escreve: sim</pre><p>El revisor necesita Bash para ejecutar los criterios. Para que no grabe de verdad, la salida es sandbox (clase 5) o una regla de permiso; la protección contra borrar y escribir es tema del <a href=\"https://inematds.github.io/loop-r-eng-seguranca-v72/es/\">curso 4</a>. Y la llamada real sin <code>&lt; /dev/null</code> espera 3 s por el stdin y avisa: <code>Warning: no stdin data received in 3s</code>.</p>"
           }
         ]
       }
@@ -163,8 +163,8 @@
           "id": "e1",
           "titulo": "E3 · Explorador de solo lectura",
           "min": "10 min",
-          "texto": "Crea .claude/agents/explorador.md en el proyecto de entrenamiento y ejecuta el conferidor.",
-          "pronto": "el conferidor imprime <code>explorador · tools: Read, Grep, Glob · model: inherit · escreve: não</code>."
+          "texto": "Crea .claude/agents/explorador.md en el proyecto de entrenamiento y ejecuta el verificador.",
+          "pronto": "el verificador imprime <code>explorador · tools: Read, Grep, Glob · model: inherit · escreve: não</code>."
         },
         {
           "id": "e2",
@@ -270,7 +270,7 @@
         },
         {
           "t": "Curso 2 de la formación: el costo de contexto en una sesión larga",
-          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/",
+          "href": "https://inematds.github.io/loop-r-eng-execucao-longa-v72/es/",
           "icone": "seta"
         }
       ]
