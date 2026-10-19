@@ -21,7 +21,7 @@
 # gera-avalia.sh — the generator does the work; the evaluator (another process, artifact only) checks it; up to MAX rounds.
 # Usage: gera-avalia.sh &lt;goal.md&gt; &quot;&lt;request&gt;&quot;
 #   GERADOR = command that reads request + feedback on stdin (default: claude -p --permission-mode acceptEdits)
-#   the evaluator is the kit&#x27;s verificar.mjs: it runs each `comando` → `saída esperada` criterion
+#   the evaluator is the kit&#x27;s verificar.mjs: it runs each `command` → `expected output` criterion
 set -u
 GOAL=&quot;${1:?uso: gera-avalia.sh &lt;goal.md&gt; \&quot;&lt;pedido&gt;\&quot;}&quot;; PEDIDO=&quot;${2:?pedido}&quot;
 GERADOR=&quot;${GERADOR:-claude -p --permission-mode acceptEdits}&quot;; MAX=&quot;${MAX:-3}&quot;; parecer=&quot;&quot;
